@@ -1,13 +1,18 @@
+import 'dart:typed_data';
+
 import 'package:favorite_button/favorite_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import 'package:get/get.dart';
 import 'package:getx_app/pages/categories/categories_controller.dart';
+import 'package:getx_app/pages/home/home_page.dart';
 import 'package:getx_app/services/backend_service.dart';
 import 'package:getx_app/widget/photo_widget/photohero.dart';
+import 'package:image_gallery_saver/image_gallery_saver.dart';
+import 'package:share/share.dart';
 import 'dart:math' as math;
 import 'package:transparent_image/transparent_image.dart';
-
+import 'package:http/http.dart' as http;
 class CategoriesPage extends GetView<CategoriesController> {
   List homme;
   List femme;
@@ -52,7 +57,7 @@ class CategoriesPage extends GetView<CategoriesController> {
                                           builder: (BuildContext context) {
                                             return Scaffold(
 
-                                              floatingActionButton: buildSpeedDial(),
+                                              floatingActionButton: buildSpeedDial(xCriteria[index]["url"], xCriteria[index]["productId"],context),
                                               appBar: AppBar(
                                                 backgroundColor: Color(0xFFF70759),
                                                 title: const Text('Details'),
@@ -92,7 +97,7 @@ class CategoriesPage extends GetView<CategoriesController> {
                                                                   crossAxisAlignment: CrossAxisAlignment.center,
                                                                   children: <Widget>[
                                                                     Icon(Icons.remove_red_eye, size:35, color: Colors.white),
-                                                                    Text(xCriteria[index]["vues"], style:TextStyle(color: Colors.white))
+                                                                    Text(xCriteria[index]["vues"].toString(), style:TextStyle(color: Colors.white))
                                                                   ],
                                                                 ),
                                                               ),
@@ -102,20 +107,30 @@ class CategoriesPage extends GetView<CategoriesController> {
                                                                   crossAxisAlignment: CrossAxisAlignment.center,
                                                                   children: <Widget>[
                                                                     Transform(alignment:Alignment.center,transform: Matrix4.rotationY(math.pi), child: Icon(Icons.star_rate_outlined, size:35, color:Colors.white)),
-                                                                    Text(xCriteria[index]["note"], style:TextStyle(color: Colors.white))
+                                                                    Text(xCriteria[index]["note"].toString(), style:TextStyle(color: Colors.white))
                                                                   ],
                                                                 ),
                                                               ),
-                                                              Container(
-                                                                padding: EdgeInsets.only(bottom:50),
-                                                                child: Column(
-                                                                  crossAxisAlignment: CrossAxisAlignment.center,
-                                                                  children: <Widget>[
-                                                                    Transform(alignment:Alignment.center,transform: Matrix4.rotationY(math.pi), child: Icon(Icons.reply, size:35, color:Colors.white)),
-                                                                    Text('Partager', style:TextStyle(color: Colors.white))
-                                                                  ],
+                                                              GestureDetector(
+                                                                  onTap: ()=>{
+                                                                    if (permission() != null){
+                                                                      _shareImage(
+                                                                          xCriteria[index]["url"],
+                                                                          xCriteria[index]["productId"],
+                                                                          context)
+                                                                    }
+                                                                  },
+                                                                child: Container(
+                                                                  padding: EdgeInsets.only(bottom:50),
+                                                                  child: Column(
+                                                                    crossAxisAlignment: CrossAxisAlignment.center,
+                                                                    children: <Widget>[
+                                                                      Transform(alignment:Alignment.center,transform: Matrix4.rotationY(math.pi), child: Icon(Icons.reply, size:35, color:Colors.white)),
+                                                                      Text('Partager', style:TextStyle(color: Colors.white))
+                                                                    ],
+                                                                  ),
                                                                 ),
-                                                              ),
+                                                              )
                                                               /*AnimatedBuilder(
                       animation: animationController,
                       child: CircleAvatar(
@@ -237,45 +252,32 @@ class CategoriesPage extends GetView<CategoriesController> {
     );
   }
 
-  SpeedDial buildSpeedDial() {
-    return SpeedDial(
-      animatedIcon: AnimatedIcons.menu_close,
-      animatedIconTheme: IconThemeData(size: 28.0),
-      backgroundColor: Colors.blue[900],
-      visible: true,
-      curve: Curves.easeInCubic,
-      children: [
-        SpeedDialChild(
-          child: Icon(Icons.file_download, color: Colors.white),
-          backgroundColor: Colors.blueAccent,
-          onTap: () => print('Pressed Read Later'),
-          labelStyle:
-          TextStyle(fontWeight: FontWeight.w500, color: Colors.white),
-          labelBackgroundColor: Colors.black,
-        ),
-        SpeedDialChild(
-          child: IconButton(
-              onPressed: () => {},
-              icon: FavoriteButton(
-                  iconSize: 40,
-                  isFavorite: false,
-                  valueChanged:
-                      (_isFavorite) { })),
-          backgroundColor: Colors.blueAccent,
-          onTap: () => print('Pressed Write'),
-          labelStyle:
-          TextStyle(fontWeight: FontWeight.w500, color: Colors.white),
-          labelBackgroundColor: Colors.black,
-        ),
-        SpeedDialChild(
-          child: Icon(Icons.share, color: Colors.white),
-          backgroundColor: Colors.blueAccent,
-          onTap: () => print('Pressed Code'),
-          labelStyle:
-          TextStyle(fontWeight: FontWeight.w500, color: Colors.white),
-          labelBackgroundColor: Colors.black,
-        ),
-      ],
-    );
-  }
+
+}
+
+_saveImage(url, name, context) async {
+  var client = http.Client();
+  var response = await client.get(Uri.parse(url));
+  final result = await ImageGallerySaver.saveImage(
+      Uint8List.fromList(response.bodyBytes),
+      quality: 60,
+      name: "model" + name.toString());
+  ScaffoldMessenger.of(context)
+      .showSnackBar(SnackBar(content: Text('Image sauvegardée avec succès')));
+  return result;
+}
+
+_shareImage(url, name, context) async {
+  var client = http.Client();
+  var response = await client.get(Uri.parse(url));
+  final result = await ImageGallerySaver.saveImage(
+      Uint8List.fromList(response.bodyBytes),
+      quality: 60,
+      name: "model" + name.toString());
+  print(result["filePath"]);
+  Share.shareFiles([
+    result['filePath']
+        .toString()
+        .replaceAll(RegExp('file://'), '')
+  ], text: 'Great picture');
 }

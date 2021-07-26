@@ -185,9 +185,9 @@ class HomePage extends GetView<HomeController> {
   }
 }
 
-Widget _details(context, item, meIndex, fonction) {
+Widget _details(context, item, meIndex, fonction,url, name) {
   return Scaffold(
-    floatingActionButton: buildSpeedDial(),
+    floatingActionButton: buildSpeedDial(url, name, context),
     appBar: AppBar(
       backgroundColor: Color(0xFFF70759),
       title: const Text('Detail'),
@@ -346,7 +346,7 @@ Widget _listStaggered(context, controller, fonction) {
                             GestureDetector(
                               onTap: () {
                                 Get.to(() =>
-                                    _details(context, data, index, fonction));
+                                    _details(context, data, index, fonction,data[index]["url"],data[index]["productId"]));
                                 /*Navigator.of(context).push(
                                   MaterialPageRoute<void>(
                                       builder: (BuildContext
@@ -374,8 +374,7 @@ Widget _listStaggered(context, controller, fonction) {
                                       children: [
                                         IconButton(
                                           onPressed: () {
-                                            Get.to(_details(context, data,
-                                                index, fonction));
+                                            _details(context, data, index, fonction,data[index]["url"],data[index]["productId"]);
                                           },
                                           icon: Icon(
                                             Icons.remove_red_eye_sharp,
@@ -438,16 +437,21 @@ _saveImage(url, name, context) async {
 }
 
 _shareImage(url, name, context) async {
-  _saveImage(url, name, context);
-  print(_saveImage(url, name, context)["filePath"]);
+  var client = http.Client();
+  var response = await client.get(Uri.parse(url));
+  final result = await ImageGallerySaver.saveImage(
+      Uint8List.fromList(response.bodyBytes),
+      quality: 60,
+      name: "model" + name.toString());
+  print(result["filePath"]);
   Share.shareFiles([
-    _saveImage(url, name, context)['filePath']
+    result['filePath']
         .toString()
         .replaceAll(RegExp('file://'), '')
   ], text: 'Great picture');
 }
 
-SpeedDial buildSpeedDial() {
+SpeedDial buildSpeedDial(url, name, context) {
   return SpeedDial(
     animatedIcon: AnimatedIcons.menu_close,
     animatedIconTheme: IconThemeData(size: 28.0),
@@ -458,7 +462,9 @@ SpeedDial buildSpeedDial() {
       SpeedDialChild(
         child: Icon(Icons.file_download, color: Colors.white),
         backgroundColor: Colors.blueAccent,
-        onTap: () => print('Pressed Read Later'),
+        onTap: () => {
+          _saveImage(url,name,context)
+        },
         labelStyle: TextStyle(fontWeight: FontWeight.w500, color: Colors.white),
         labelBackgroundColor: Colors.black,
       ),
@@ -472,7 +478,12 @@ SpeedDial buildSpeedDial() {
       SpeedDialChild(
         child: Icon(Icons.share, color: Colors.white),
         backgroundColor: Colors.blueAccent,
-        onTap: () async => {},
+        onTap: () async => {
+          _shareImage(
+              url,
+              name,
+              context)
+        },
         labelStyle: TextStyle(fontWeight: FontWeight.w500, color: Colors.white),
         labelBackgroundColor: Colors.black,
       ),

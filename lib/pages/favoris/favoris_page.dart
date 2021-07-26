@@ -62,7 +62,7 @@ Widget _builListView() {
                                 builder: (BuildContext context) {
                                   return Scaffold(
 
-                                    floatingActionButton: buildSpeedDial(),
+                                    floatingActionButton: buildSpeedDial(product.url,product.productId,context),
                                     appBar: AppBar(
                                       backgroundColor: Color(0xFFF70759),
                                       title: const Text('Details'),
