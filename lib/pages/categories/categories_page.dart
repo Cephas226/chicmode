@@ -29,7 +29,7 @@ class CategoriesPage extends GetView<CategoriesController> {
                     body:Center(
                       child:
                       FutureBuilder(
-                          future: Dataservices.fetchProduct(),
+                          future: Dataservices.fetchProductx(),
                           builder: (context, AsyncSnapshot<List<dynamic>> snapshot) {
                             List xCriteria;
                             if (snapshot.hasData){
@@ -91,8 +91,8 @@ class CategoriesPage extends GetView<CategoriesController> {
                                                                 child: Column(
                                                                   crossAxisAlignment: CrossAxisAlignment.center,
                                                                   children: <Widget>[
-                                                                    Icon(Icons.favorite, size:35, color: Colors.white),
-                                                                    Text('427.9K', style:TextStyle(color: Colors.white))
+                                                                    Icon(Icons.remove_red_eye, size:35, color: Colors.white),
+                                                                    Text(xCriteria[index]["vues"], style:TextStyle(color: Colors.white))
                                                                   ],
                                                                 ),
                                                               ),
@@ -101,8 +101,8 @@ class CategoriesPage extends GetView<CategoriesController> {
                                                                 child: Column(
                                                                   crossAxisAlignment: CrossAxisAlignment.center,
                                                                   children: <Widget>[
-                                                                    Transform(alignment:Alignment.center,transform: Matrix4.rotationY(math.pi), child: Icon(Icons.sms, size:35, color:Colors.white)),
-                                                                    Text('2051', style:TextStyle(color: Colors.white))
+                                                                    Transform(alignment:Alignment.center,transform: Matrix4.rotationY(math.pi), child: Icon(Icons.star_rate_outlined, size:35, color:Colors.white)),
+                                                                    Text(xCriteria[index]["note"], style:TextStyle(color: Colors.white))
                                                                   ],
                                                                 ),
                                                               ),

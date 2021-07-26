@@ -6,11 +6,14 @@ import 'package:getx_app/model/product_model.dart';
 import 'package:getx_app/services/backend_service.dart';
 import 'package:hive/hive.dart';
 import 'package:getx_app/domain/request.dart';
+import 'package:http/http.dart' as http;
+import 'package:permission_handler/permission_handler.dart';
 class HomeController extends GetxController {
   String titlex = 'Accueil';
   RxList<Product> dataProduct = <Product>[].obs;
   RxList<Product> dataProductChip = <Product>[].obs;
   bool favorite= false;
+  RxBool permissionGranted=false.obs;
   String productBoxName = 'product';
   //Gestion des chip
 
@@ -29,11 +32,11 @@ class HomeController extends GetxController {
 
   //Box
   Box<Product> productBox;
-
+  static var client = http.Client();
   @override
   void onInit() async {
     super.onInit();
-    selectedChip=0;
+   // getChipProduct(productChip.TOUT);
     readProduct();
     //await Hive.openBox<Product>(productBoxName);
 
@@ -76,24 +79,31 @@ class HomeController extends GetxController {
     update(['favorite', true]);
   }
 
-  Future<List<dynamic>> getChipProduct(productChip chip) {
+  Future<List> fetchProduct() async {
+    final response =
+    await client.get(Uri.parse("https://myafricanstyle.herokuapp.com/product"));
+
+    if (response.statusCode == 200)
+      return json.decode(response.body);
+    return [];
+  }
+
+  Future<List> getChipProduct(productChip chip) {
+    print("hello");
     switch (chip) {
       case productChip.TOUT:
-        Dataservices.fetchProduct().then((value) => print(value.toList()..shuffle()));
-       return  Dataservices.fetchProduct().then((value) => value.toList()..shuffle());
+       return  fetchProduct().then((value) => value.toList()..shuffle());
 
       case productChip.RECENT:
-        Dataservices.fetchProduct().then((value) => print(value.reversed.toList()));
-        return  Dataservices.fetchProduct().then((value) => value.reversed.toList());
+        return  fetchProduct().then((value) => value.reversed.toList());
 
       case productChip.MIEUX_NOTE:
-        Dataservices.fetchProduct().then((value) => print(value.toList()));
-        return Dataservices.fetchProduct().then((value) => value.toList());
+        return fetchProduct().then((value) => value.toList());
 
       case productChip.ALEATOIRE:
-        Dataservices.fetchProduct().then((value) => print(value.reversed.toList()));
-        return Dataservices.fetchProduct().then((value) => value.reversed.toList());
+        return fetchProduct().then((value) => value.reversed.toList());
     }
+    return fetchProduct();
   }
   String setTabName(int index) {
     switch (index) {
@@ -111,4 +121,6 @@ class HomeController extends GetxController {
     }
     return titlex;
   }
+
+
 }

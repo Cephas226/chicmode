@@ -101,8 +101,8 @@ Widget _builListView() {
                                                       child: Column(
                                                         crossAxisAlignment: CrossAxisAlignment.center,
                                                         children: <Widget>[
-                                                          Icon(Icons.favorite, size:35, color: Colors.white),
-                                                          Text('427.9K', style:TextStyle(color: Colors.white))
+                                                          Icon(Icons.remove_red_eye, size:35, color: Colors.white),
+                                                          Text(product.vues.toString(), style:TextStyle(color: Colors.white))
                                                         ],
                                                       ),
                                                     ),

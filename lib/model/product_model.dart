@@ -14,19 +14,23 @@ class Product {
   String url;
 
   @HiveField(2)
-  int note;
+  int vues;
 
   @HiveField(3)
-  String categorie;
+  int note;
 
   @HiveField(4)
+  String categorie;
+
+  @HiveField(5)
   bool favorite;
 
-  Product({this.productId, this.url, this.note, this.categorie, this.favorite});
+  Product({this.productId, this.url,this.vues, this.note, this.categorie, this.favorite});
 
   factory Product.fromJson(Map<String, dynamic> json) => Product(
     productId: json["productId"],
     url: json["url"],
+    vues: json["vues"],
     note: json["note"],
     categorie: json["categorie"],
     favorite: json["favorite"],
@@ -35,6 +39,7 @@ class Product {
   Map<String, dynamic> toJson() => {
     "productId": productId,
     "url": url,
+    "vues": vues,
     "note": note,
     "categorie": categorie,
     "favorite":favorite
@@ -46,7 +51,7 @@ class Product {
       json.encode(List<dynamic>.from(data.map((x) => x.toJson())));
   @override
   String toString() {
-    return '{productId: $productId, url: $url,note:$note,categorie:$categorie,favorite:$favorite}';
+    return '{productId: $productId, url: $url,vues:$vues,note:$note,categorie:$categorie,favorite:$favorite}';
   }
 }
 enum productChip { TOUT, RECENT,MIEUX_NOTE, ALEATOIRE }

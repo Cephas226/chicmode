@@ -38,16 +38,19 @@ dependencies:
   #supercharged: ^2.0.0
   hive: ^2.0.4
   hive_flutter: ^1.0.0
-  path_provider: ^2.0.1
+  #path_provider: ^2.0.1
   hive_listener: ^1.2.1
   http: ^0.13.3
   collection: ^1.15.0
   image_gallery_saver: ^1.6.9
   favorite_button: ^0.0.4
   flutter_speed_dial: ^4.1.0
+  share: ^2.0.4
+  permission_handler: ^5.0.1+1
+  #esys_flutter_share: ^1.0.2
   #tiktoklikescroller: ^0.1.6
   font_awesome_flutter: ^8.8.1
-  provider: ^4.0.4
+  #provider: ^4.0.4
   #avatar_glow: any
   getwidget: ^2.0.3
   flutter_money_formatter: ^0.8.3

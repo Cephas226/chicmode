@@ -14,7 +14,7 @@ class Dataservices {
       return null;
     }
   }*/
-  static Future<List> fetchProduct() async {
+  static Future<List> fetchProductx() async {
     final response =
     await client.get(Uri.parse("https://myafricanstyle.herokuapp.com/product"));
 
