@@ -1,15 +1,16 @@
 import 'dart:typed_data';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:carousel_slider/carousel_slider.dart';
+import 'package:firebase_admob/firebase_admob.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_native_admob/native_admob_controller.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:get/get.dart';
 import 'package:getx_app/model/product_model.dart';
 import 'package:getx_app/pages/videos/took.dart';
-import 'package:http/http.dart';
-import 'package:path_provider/path_provider.dart';
+import 'package:flutter_native_admob/flutter_native_admob.dart';
 import 'dart:math' as math;
 import 'dart:io';
 import 'package:getx_app/services/backend_service.dart';
@@ -25,6 +26,8 @@ import 'home_controller.dart';
 
 class HomePage extends GetView<HomeController> {
   final HomeController _prodController = Get.put(HomeController());
+  final _nativeAdController = NativeAdmobController();
+  static const _adUnitID = "ca-app-pub-8772568690813006/9673873835";
   CarouselController carouselController = new CarouselController();
 
   String titlexy = 'Accueil';
@@ -141,7 +144,8 @@ class HomePage extends GetView<HomeController> {
                                   Positioned(
                                     left: 80,
                                     top: 500,
-                                    child: Container(
+                                    child:
+                                    Container(
                                       child: Row(
                                         children: [
                                           RatingBar.builder(
@@ -170,6 +174,17 @@ class HomePage extends GetView<HomeController> {
                                               Radius.circular(12))),
                                     ),
                                   ),
+                                  /*Container(
+                                      margin: EdgeInsets.all(8),
+                                      height: 70,
+                                      color: Colors.white,
+                                      child: NativeAdmob(
+                                        adUnitID: NativeAd.testAdUnitId,
+                                        controller: _nativeAdController,
+                                        type: NativeAdmobType.full,
+                                        loading: Center(child: CircularProgressIndicator()),
+                                        error: Text('failed to load'),
+                                      )),*/
                                 ],
                               ),
                             )

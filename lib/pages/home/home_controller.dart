@@ -84,7 +84,7 @@ class HomeController extends GetxController {
     await client.get(Uri.parse("https://myafricanstyle.herokuapp.com/product"));
 
     if (response.statusCode == 200)
-      return json.decode(response.body);
+      return dataProduct.value = jsonDecode(response.body).map((e) => Product.fromJson(e)).toList();
     return [];
   }
 
