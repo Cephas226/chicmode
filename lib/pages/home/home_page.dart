@@ -541,9 +541,7 @@ _shareImage(url, name, context) async {
     await openAppSettings();
   }
 }
-Future _getStoragePermission() async {
 
-}
 SpeedDial buildSpeedDial() {
   return SpeedDial(
     animatedIcon: AnimatedIcons.menu_close,

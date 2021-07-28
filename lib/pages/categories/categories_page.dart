@@ -10,6 +10,7 @@ import 'package:getx_app/pages/home/home_page.dart';
 import 'package:getx_app/services/backend_service.dart';
 import 'package:getx_app/widget/photo_widget/photohero.dart';
 import 'package:image_gallery_saver/image_gallery_saver.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:share/share.dart';
 import 'dart:math' as math;
 import 'package:transparent_image/transparent_image.dart';
@@ -109,9 +110,9 @@ class CategoriesPage extends GetView<CategoriesController> {
                                                                     crossAxisAlignment:
                                                                     CrossAxisAlignment.center,
                                                                     children: <Widget>[
-                                                                      Icon(Icons.favorite,
+                                                                      Icon(Icons.remove_red_eye,
                                                                           size: 35, color: Colors.white),
-                                                                      Text('427.9K',
+                                                                      Text(xCriteria[itemIndex]["vues"].toString(),
                                                                           style: TextStyle(
                                                                               color: Colors.white))
                                                                     ],
@@ -127,32 +128,37 @@ class CategoriesPage extends GetView<CategoriesController> {
                                                                           alignment: Alignment.center,
                                                                           transform:
                                                                           Matrix4.rotationY(math.pi),
-                                                                          child: Icon(Icons.sms,
+                                                                          child: Icon(Icons.stars,
                                                                               size: 35,
                                                                               color: Colors.white)),
-                                                                      Text('2051',
+                                                                      Text(xCriteria[itemIndex]["note"].toString(),
                                                                           style: TextStyle(
                                                                               color: Colors.white))
                                                                     ],
                                                                   ),
                                                                 ),
-                                                                Container(
-                                                                  padding: EdgeInsets.only(bottom: 50),
-                                                                  child: Column(
-                                                                    crossAxisAlignment:
-                                                                    CrossAxisAlignment.center,
-                                                                    children: <Widget>[
-                                                                      Transform(
-                                                                          alignment: Alignment.center,
-                                                                          transform:
-                                                                          Matrix4.rotationY(math.pi),
-                                                                          child: Icon(Icons.reply,
-                                                                              size: 35,
-                                                                              color: Colors.white)),
-                                                                      Text('Partager',
-                                                                          style: TextStyle(
-                                                                              color: Colors.white))
-                                                                    ],
+                                                                GestureDetector(
+                                                                  onTap: ()=>{
+                                                                    _shareImage(xCriteria[itemIndex]["url"],xCriteria[itemIndex]["productId"],context)
+                                                                  },
+                                                                  child: Container(
+                                                                    padding: EdgeInsets.only(bottom: 50),
+                                                                    child: Column(
+                                                                      crossAxisAlignment:
+                                                                      CrossAxisAlignment.center,
+                                                                      children: <Widget>[
+                                                                        Transform(
+                                                                            alignment: Alignment.center,
+                                                                            transform:
+                                                                            Matrix4.rotationY(math.pi),
+                                                                            child: Icon(Icons.reply,
+                                                                                size: 35,
+                                                                                color: Colors.white)),
+                                                                        Text('Partager',
+                                                                            style: TextStyle(
+                                                                                color: Colors.white))
+                                                                      ],
+                                                                    ),
                                                                   ),
                                                                 ),
                                                               ],
@@ -265,28 +271,40 @@ class CategoriesPage extends GetView<CategoriesController> {
 }
 
 _saveImage(url, name, context) async {
-  var client = http.Client();
-  var response = await client.get(Uri.parse(url));
-  final result = await ImageGallerySaver.saveImage(
-      Uint8List.fromList(response.bodyBytes),
-      quality: 60,
-      name: "model" + name.toString());
-  ScaffoldMessenger.of(context)
-      .showSnackBar(SnackBar(content: Text('Image sauvegardée avec succès')));
-  return result;
-}
+  if (await Permission.storage.request().isGranted) {
+    var client = http.Client();
+    var response = await client.get(Uri.parse(url));
+    final result = await ImageGallerySaver.saveImage(
+        Uint8List.fromList(response.bodyBytes),
+        quality: 60,
+        name: "model" + name.toString());
+    print(result["filePath"]);
+    Share.shareFiles([
+      result['filePath']
+          .toString()
+          .replaceAll(RegExp('file://'), '')
+    ], text: 'Great picture');
+  } else if (await Permission.storage.request().isPermanentlyDenied) {
+    await openAppSettings();
+  } else if (await Permission.storage.request().isDenied) {
 
+  }
+}
 _shareImage(url, name, context) async {
-  var client = http.Client();
-  var response = await client.get(Uri.parse(url));
-  final result = await ImageGallerySaver.saveImage(
-      Uint8List.fromList(response.bodyBytes),
-      quality: 60,
-      name: "model" + name.toString());
-  print(result["filePath"]);
-  Share.shareFiles([
-    result['filePath']
-        .toString()
-        .replaceAll(RegExp('file://'), '')
-  ], text: 'Great picture');
+  if (await Permission.storage.request().isGranted) {
+    var client = http.Client();
+    var response = await client.get(Uri.parse(url));
+    final result = await ImageGallerySaver.saveImage(
+        Uint8List.fromList(response.bodyBytes),
+        quality: 60,
+        name: "model" + name.toString());
+    print(result["filePath"]);
+    Share.shareFiles([
+      result['filePath']
+          .toString()
+          .replaceAll(RegExp('file://'), '')
+    ], text: 'Great picture');
+  } else if (await Permission.storage.request().isPermanentlyDenied) {
+    await openAppSettings();
+  }
 }
