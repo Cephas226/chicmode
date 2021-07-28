@@ -68,22 +68,45 @@ class HomePage extends GetView<HomeController> {
                               selected: _prodController.selectedChip == index,
                               onSelected: (bool selected) {
                                 _prodController.selectedChip =
-                                selected ? index : null;
+                                    selected ? index : null;
                                 _prodController.getChipProduct(productChip
                                     .values[_prodController.selectedChip]);
                               },
                             );
                           }))),
                       Obx(() => Expanded(
-                        child: ListView.builder(
-                            scrollDirection: Axis.vertical,
-                            physics: const BouncingScrollPhysics(),
-                            shrinkWrap: true,
-                            itemCount: _prodController.dataProductChip.length,
-                            itemBuilder: (BuildContext context, int index) {
-                              return Image.network(_prodController.dataProductChip[index].url);
-                            }),
-                      )),
+                            child: Container(
+                              margin: EdgeInsets.all(12),
+                              child:
+                              _detailStaggeredGridView(context,controller,_prodController.dataProduct)
+                              /*StaggeredGridView.countBuilder(
+                                  crossAxisCount: 2,
+                                  crossAxisSpacing: 10,
+                                  mainAxisSpacing: 12,
+                                  itemCount: _prodController.dataProduct.length,
+                                  itemBuilder: (context, index) {
+                                    return Container(
+                                      decoration: BoxDecoration(
+                                          color: Colors.transparent,
+                                          borderRadius: BorderRadius.all(
+                                              Radius.circular(15))),
+                                      child: ClipRRect(
+                                        borderRadius: BorderRadius.all(
+                                            Radius.circular(15)),
+                                        child: FadeInImage.memoryNetwork(
+                                          placeholder: kTransparentImage,
+                                          image: _prodController.dataProductChip[index].url,
+                                          fit: BoxFit.cover,
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                  staggeredTileBuilder: (index) {
+                                    return StaggeredTile.count(
+                                        1, index.isEven ? 1.2 : 1.8);
+                                  })*/,
+                            ),
+                          )),
                     ],
                   ),
                 ),
@@ -95,75 +118,76 @@ class HomePage extends GetView<HomeController> {
                       final data = snapshot.data;
                       return snapshot.hasData
                           ? CarouselSlider.builder(
-                        itemCount: snapshot.data.length,
-                        options: CarouselOptions(
-                          height: 800,
-                          scrollDirection: Axis.vertical,
-                          initialPage: 0,
-                          viewportFraction: 1,
-                          aspectRatio: 16 / 9,
-                          enableInfiniteScroll: false,
-                          autoPlay: false,
-                        ),
-                        itemBuilder: (BuildContext context, int itemIndex,
-                            int pageViewIndex) =>
-                            Stack(
-                              children: <Widget>[
-                                Card(
-                                  shape: RoundedRectangleBorder(
-                                      borderRadius:
-                                      BorderRadiusDirectional.circular(
-                                          20)),
-                                  clipBehavior: Clip.antiAlias,
-                                  child: Container(
-                                    padding: const EdgeInsets.all(0.0),
-                                    height: double.infinity,
-                                    color: Color(0xFFF70759),
-                                    child: PhotoHero(
-                                      photo: data.reversed.toList()[itemIndex]
-                                      ["url"],
-                                      width: double.infinity,
+                              itemCount: snapshot.data.length,
+                              options: CarouselOptions(
+                                height: 800,
+                                scrollDirection: Axis.vertical,
+                                initialPage: 0,
+                                viewportFraction: 1,
+                                aspectRatio: 16 / 9,
+                                enableInfiniteScroll: false,
+                                autoPlay: false,
+                              ),
+                              itemBuilder: (BuildContext context, int itemIndex,
+                                      int pageViewIndex) =>
+                                  Stack(
+                                children: <Widget>[
+                                  Card(
+                                    shape: RoundedRectangleBorder(
+                                        borderRadius:
+                                            BorderRadiusDirectional.circular(
+                                                20)),
+                                    clipBehavior: Clip.antiAlias,
+                                    child: Container(
+                                      padding: const EdgeInsets.all(0.0),
                                       height: double.infinity,
-                                      onTap: () {
-                                        print("cooly");
-                                      },
+                                      color: Color(0xFFF70759),
+                                      child: PhotoHero(
+                                        photo: data.reversed.toList()[itemIndex]
+                                            ["url"],
+                                        width: double.infinity,
+                                        height: double.infinity,
+                                        onTap: () {
+                                          print("cooly");
+                                        },
+                                      ),
                                     ),
                                   ),
-                                ),
-                                Positioned(
-                                  left: 80,
-                                  top: 500,
-                                  child: Container(
-                                    child: Row(
-                                      children: [
-                                        RatingBar.builder(
-                                          initialRating: 3,
-                                          minRating: 1,
-                                          direction: Axis.horizontal,
-                                          allowHalfRating: true,
-                                          itemCount: 5,
-                                          itemPadding: EdgeInsets.symmetric(horizontal: 4.0),
-                                          itemBuilder: (context, _) => Icon(
-                                            Icons.star,
-                                            color: Colors.amber,
+                                  Positioned(
+                                    left: 80,
+                                    top: 500,
+                                    child: Container(
+                                      child: Row(
+                                        children: [
+                                          RatingBar.builder(
+                                            initialRating: 3,
+                                            minRating: 1,
+                                            direction: Axis.horizontal,
+                                            allowHalfRating: true,
+                                            itemCount: 5,
+                                            itemPadding: EdgeInsets.symmetric(
+                                                horizontal: 4.0),
+                                            itemBuilder: (context, _) => Icon(
+                                              Icons.star,
+                                              color: Colors.amber,
+                                            ),
+                                            onRatingUpdate: (rating) {
+                                              print(pageViewIndex);
+                                              pageViewIndex++;
+                                              // carouselController.nextPage();
+                                            },
                                           ),
-                                          onRatingUpdate: (rating) {
-                                            print(pageViewIndex);
-                                            pageViewIndex++;
-                                            // carouselController.nextPage();
-                                          },
-                                        ),
-                                      ],
+                                        ],
+                                      ),
+                                      decoration: new BoxDecoration(
+                                          color: Colors.white24,
+                                          borderRadius: BorderRadius.all(
+                                              Radius.circular(12))),
                                     ),
-                                    decoration: new BoxDecoration(
-                                        color: Colors.white24,
-                                        borderRadius: BorderRadius.all(
-                                            Radius.circular(12))),
                                   ),
-                                ),
-                              ],
-                            ),
-                      )
+                                ],
+                              ),
+                            )
                           : const CircularProgressIndicator();
                     }),
               ),
@@ -176,7 +200,7 @@ class HomePage extends GetView<HomeController> {
   }
 }
 
-Widget _details(context,item,meIndex) {
+Widget _details(context, item, meIndex) {
   return Scaffold(
     floatingActionButton: buildSpeedDial(),
     appBar: AppBar(
@@ -188,235 +212,202 @@ Widget _details(context,item,meIndex) {
         builder: (context, AsyncSnapshot<List<dynamic>> snapshot) {
           final data = snapshot.data;
           return snapshot.hasData
-              ?
-          CarouselSlider.builder(
-            itemCount: snapshot.data.length,
-            options: CarouselOptions(
-              height: 800,
-              scrollDirection: Axis.vertical,
-              initialPage: meIndex,
-              viewportFraction: 1,
-              aspectRatio: 16 / 9,
-              enableInfiniteScroll: false,
-              autoPlay: false,
-            ),
-            itemBuilder: (BuildContext context, int itemIndex,
-                int pageViewIndex) =>
-                Stack(
-                  children: <Widget>[
-                    Card(
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadiusDirectional.circular(20)),
-                      clipBehavior: Clip.antiAlias,
-                      child: Container(
-                        padding: const EdgeInsets.all(0.0),
-                        height: double.infinity,
-                        color: Color(0xFFF70759),
-                        child: PhotoHero(
-                          photo: data.reversed.toList()[itemIndex]["url"],
-                          width: double.infinity,
+              ? CarouselSlider.builder(
+                  itemCount: snapshot.data.length,
+                  options: CarouselOptions(
+                    height: 800,
+                    scrollDirection: Axis.vertical,
+                    initialPage: meIndex,
+                    viewportFraction: 1,
+                    aspectRatio: 16 / 9,
+                    enableInfiniteScroll: false,
+                    autoPlay: false,
+                  ),
+                  itemBuilder: (BuildContext context, int itemIndex,
+                          int pageViewIndex) =>
+                      Stack(
+                    children: <Widget>[
+                      Card(
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadiusDirectional.circular(20)),
+                        clipBehavior: Clip.antiAlias,
+                        child: Container(
+                          padding: const EdgeInsets.all(0.0),
                           height: double.infinity,
-                          onTap: () {
-                            Get.back();
-                          },
+                          color: Color(0xFFF70759),
+                          child: PhotoHero(
+                            photo: data.reversed.toList()[itemIndex]["url"],
+                            width: double.infinity,
+                            height: double.infinity,
+                            onTap: () {
+                              Get.back();
+                            },
+                          ),
                         ),
                       ),
-                    ),
-                    Padding(
-                        padding: EdgeInsets.only(bottom: 65, right: 10),
-                        child: Align(
-                            alignment: Alignment.bottomRight,
-                            child: Container(
-                              width: 70,
-                              height: 400,
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.end,
-                                children: <Widget>[
-                                  Container(
-                                    padding: EdgeInsets.only(bottom: 25),
-                                    child: Column(
-                                      crossAxisAlignment:
-                                      CrossAxisAlignment.center,
-                                      children: <Widget>[
-                                        Icon(Icons.favorite,
-                                            size: 35, color: Colors.white),
-                                        Text('427.9K',
-                                            style: TextStyle(
-                                                color: Colors.white))
-                                      ],
-                                    ),
-                                  ),
-                                  Container(
-                                    padding: EdgeInsets.only(bottom: 20),
-                                    child: Column(
-                                      crossAxisAlignment:
-                                      CrossAxisAlignment.center,
-                                      children: <Widget>[
-                                        Transform(
-                                            alignment: Alignment.center,
-                                            transform:
-                                            Matrix4.rotationY(math.pi),
-                                            child: Icon(Icons.sms,
-                                                size: 35,
-                                                color: Colors.white)),
-                                        Text('2051',
-                                            style: TextStyle(
-                                                color: Colors.white))
-                                      ],
-                                    ),
-                                  ),
-                                  Container(
-                                    padding: EdgeInsets.only(bottom: 50),
-                                    child: Column(
-                                      crossAxisAlignment:
-                                      CrossAxisAlignment.center,
-                                      children: <Widget>[
-                                        Transform(
-                                            alignment: Alignment.center,
-                                            transform:
-                                            Matrix4.rotationY(math.pi),
-                                            child: Icon(Icons.reply,
-                                                size: 35,
-                                                color: Colors.white)),
-                                        Text('Partager',
-                                            style: TextStyle(
-                                                color: Colors.white))
-                                      ],
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ))),
-                  ],
-                ),
-          )
-              : Center(
-            child: CircularProgressIndicator(),
-          );
-        }),
-  );
-}
-
-Widget _detailx(context,controller) {
-  return Scaffold(
-    body: FutureBuilder(
-        future: Dataservices.fetchProductx(),
-        builder: (context, AsyncSnapshot<List<dynamic>> snapshot) {
-          final data = snapshot.data;
-          return snapshot.hasData
-              ?
-          StaggeredGridView.countBuilder(
-            crossAxisCount: 4,
-            padding: const EdgeInsets.all(2.0),
-            itemCount: data.length,
-            itemBuilder: (BuildContext context, int index) =>
-                Container(
-                  decoration: BoxDecoration(
-                      color: Colors.transparent,
-                      borderRadius: BorderRadius.all(
-                          Radius.circular(12))),
-                  child:
-                  ClipRRect(
-                      borderRadius:
-                      BorderRadius.all(Radius.circular(12)),
-                      child: Stack(
-                        clipBehavior: Clip.none, fit: StackFit.passthrough,
-                        children: [
-                          GestureDetector(
-                            onTap: () {
-                              Get.to(_details(context, data.reversed.toList(),index));
-                              /*Navigator.of(context).push(
-                                  MaterialPageRoute<void>(
-                                      builder: (BuildContext
-                                      context) {
-                                        return _details(context, data.reversed.toList(),index);
-                                      }));*/
-                            },
-                            child: Card(
-                              shape: RoundedRectangleBorder(
-                                  borderRadius:
-                                  BorderRadiusDirectional
-                                      .circular(20)),
-                              clipBehavior: Clip.antiAlias,
-                              child: FadeInImage.memoryNetwork(
-                                  placeholder:
-                                  kTransparentImage,
-                                  image: data.reversed.toList()[index]["url"],
-                                  fit: BoxFit.cover),
-                            ),
-                          ),
-                          Positioned(
-                              left: 130,
-                              top: 0,
-                              child: Center(
-                                child: Container(
-                                  child: Column(
-                                    children: [
-                                      IconButton(
-                                        onPressed: () {
-                                          Get.to(_details(context, data.reversed.toList(),index));
-                                        },
-                                        icon: Icon(
-                                          Icons
-                                              .remove_red_eye_sharp,
-                                          color: Colors.white70,
-                                        ),
+                      Padding(
+                          padding: EdgeInsets.only(bottom: 65, right: 10),
+                          child: Align(
+                              alignment: Alignment.bottomRight,
+                              child: Container(
+                                width: 70,
+                                height: 400,
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.end,
+                                  children: <Widget>[
+                                    Container(
+                                      padding: EdgeInsets.only(bottom: 25),
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.center,
+                                        children: <Widget>[
+                                          Icon(Icons.favorite,
+                                              size: 35, color: Colors.white),
+                                          Text('427.9K',
+                                              style: TextStyle(
+                                                  color: Colors.white))
+                                        ],
                                       ),
-                                      IconButton(
-                                          onPressed: () => {},
-                                          icon: FavoriteButton(
-                                              iconSize: 40,
-                                              isFavorite: false,
-                                              valueChanged:
-                                                  (_isFavorite) {
-                                                if (_isFavorite) {
-                                                  controller.addProduct(
-                                                      data,
-                                                      context);
-                                                }
-                                              })),
-                                      IconButton(
-                                          onPressed: () async =>
-                                          {
-                                            _saveImage(
-                                                data[index]["url"],
-                                                data[index]["productId"],
-                                                context),
-                                          },
-                                          icon: Icon(
-                                            Icons.file_download,
-                                            color:
-                                            Colors.white70,
-                                          )),
-                                    ],
-                                  ),
-                                  decoration: new BoxDecoration(
-                                      color: Colors.black26,
-                                      borderRadius:
-                                      BorderRadius.all(
-                                          Radius.circular(
-                                              10))),
+                                    ),
+                                    Container(
+                                      padding: EdgeInsets.only(bottom: 20),
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.center,
+                                        children: <Widget>[
+                                          Transform(
+                                              alignment: Alignment.center,
+                                              transform:
+                                                  Matrix4.rotationY(math.pi),
+                                              child: Icon(Icons.sms,
+                                                  size: 35,
+                                                  color: Colors.white)),
+                                          Text('2051',
+                                              style: TextStyle(
+                                                  color: Colors.white))
+                                        ],
+                                      ),
+                                    ),
+                                    Container(
+                                      padding: EdgeInsets.only(bottom: 50),
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.center,
+                                        children: <Widget>[
+                                          Transform(
+                                              alignment: Alignment.center,
+                                              transform:
+                                                  Matrix4.rotationY(math.pi),
+                                              child: Icon(Icons.reply,
+                                                  size: 35,
+                                                  color: Colors.white)),
+                                          Text('Partager',
+                                              style: TextStyle(
+                                                  color: Colors.white))
+                                        ],
+                                      ),
+                                    ),
+                                  ],
                                 ),
-                              )),
-                        ],
-                      )),
-                ),
-            staggeredTileBuilder: (int index) =>
-            new StaggeredTile.fit(2),
-            mainAxisSpacing: 3.0,
-            crossAxisSpacing: 4.0, //
-          )
+                              ))),
+                    ],
+                  ),
+                )
               : Center(
-            child: CircularProgressIndicator(),
-          );
+                  child: CircularProgressIndicator(),
+                );
         }),
   );
 }
 
-
-
-
-
+Widget _detailStaggeredGridView(context, controller,data) {
+  return Scaffold(
+    body: StaggeredGridView.countBuilder(
+      crossAxisCount: 4,
+      padding: const EdgeInsets.all(2.0),
+      itemCount: data.length,
+      itemBuilder: (BuildContext context, int index) => Container(
+        decoration: BoxDecoration(
+            color: Colors.transparent,
+            borderRadius: BorderRadius.all(Radius.circular(12))),
+        child: ClipRRect(
+            borderRadius: BorderRadius.all(Radius.circular(12)),
+            child: Stack(
+              clipBehavior: Clip.none,
+              fit: StackFit.passthrough,
+              children: [
+                GestureDetector(
+                  onTap: () {
+                    Get.to(_details(
+                        context, data.reversed.toList(), index));
+                  },
+                  child: Card(
+                    shape: RoundedRectangleBorder(
+                        borderRadius:
+                        BorderRadiusDirectional.circular(20)),
+                    clipBehavior: Clip.antiAlias,
+                    child: FadeInImage.memoryNetwork(
+                        placeholder: kTransparentImage,
+                        image: data.reversed.toList()[index].url,
+                        fit: BoxFit.cover),
+                  ),
+                ),
+                Positioned(
+                    left: 130,
+                    top: 0,
+                    child: Center(
+                      child: Container(
+                        child: Column(
+                          children: [
+                            IconButton(
+                              onPressed: () {
+                                Get.to(_details(context,
+                                    data.reversed.toList(), index));
+                              },
+                              icon: Icon(
+                                Icons.remove_red_eye_sharp,
+                                color: Colors.white70,
+                              ),
+                            ),
+                            IconButton(
+                                onPressed: () => {},
+                                icon: FavoriteButton(
+                                    iconSize: 40,
+                                    isFavorite: false,
+                                    valueChanged: (_isFavorite) {
+                                      if (_isFavorite) {
+                                        controller.addProduct(
+                                            data, context);
+                                      }
+                                    })),
+                            IconButton(
+                                onPressed: () async => {
+                                  _saveImage(
+                                      data[index]["url"],
+                                      data[index]["productId"],
+                                      context),
+                                },
+                                icon: Icon(
+                                  Icons.file_download,
+                                  color: Colors.white70,
+                                )),
+                          ],
+                        ),
+                        decoration: new BoxDecoration(
+                            color: Colors.black26,
+                            borderRadius: BorderRadius.all(
+                                Radius.circular(10))),
+                      ),
+                    )),
+              ],
+            )),
+      ),
+      staggeredTileBuilder: (int index) => new StaggeredTile.fit(2),
+      mainAxisSpacing: 3.0,
+      crossAxisSpacing: 4.0, //
+    ),
+  );
+}
 
 _saveImage(url, name, context) async {
   var client = http.Client();
