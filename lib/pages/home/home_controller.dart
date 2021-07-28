@@ -62,9 +62,8 @@ class HomeController extends GetxController {
       printError();
     });
   }
-  addProduct(Product prod,context) async {
+  addProduct(prod,context) async {
     productBox.add(prod);
-    //print(productBox);
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Enregistré dans favoris')));
   }
   void removeProduct(int id) async{

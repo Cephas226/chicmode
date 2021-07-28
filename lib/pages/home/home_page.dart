@@ -8,7 +8,6 @@ import 'package:get/get.dart';
 import 'package:getx_app/model/product_model.dart';
 import 'package:getx_app/pages/videos/took.dart';
 import 'dart:math' as math;
-import 'package:video_player/video_player.dart';
 import 'package:getx_app/services/backend_service.dart';
 import 'package:getx_app/widget/photo_widget/photohero.dart';
 import 'package:image_gallery_saver/image_gallery_saver.dart';
@@ -362,7 +361,7 @@ Widget _detailx(context, controller) {
                                             (_isFavorite) {
                                           if (_isFavorite) {
                                             controller.addProduct(
-                                                controller.dataProductChip,
+                                                controller.dataProductChip[index],
                                                 context);
                                           }
                                         })),
