@@ -36,26 +36,22 @@ class HomePage extends GetView<HomeController> {
       length: 3,
       child: Scaffold(
           appBar: AppBar(
+            title: Obx(()=>Text(_prodController.myHandler.value.title)),
             bottom: TabBar(
               indicatorColor: Colors.black,
-              onTap: (index) {
-                print(index);
-              },
-              tabs: [
+              controller: _prodController.controller,
+              tabs: <Tab>[
                 Tab(icon: Icon(Icons.photo_camera)),
                 Tab(icon: Icon(Icons.stars)),
                 Tab(icon: Icon(Icons.video_library_sharp)),
               ],
-            ),
-            title: Text(
-              _prodController.titlex,
-              style: TextStyle(color: Colors.white),
             ),
             elevation: 0,
             backgroundColor: Color(0xFFF70759),
           ),
           drawer: MainDrawer(),
           body: TabBarView(
+            controller: _prodController.controller,
             children: [
               SafeArea(
                 child: Container(

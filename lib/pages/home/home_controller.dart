@@ -5,7 +5,7 @@ import 'package:get/get.dart';
 import 'package:getx_app/model/product_model.dart';
 import 'package:hive/hive.dart';
 import 'package:getx_app/domain/request.dart';
-class HomeController extends GetxController {
+class HomeController extends GetxController with SingleGetTickerProviderMixin{
   String titlex = 'Accueil';
   RxList<Product> dataProduct = <Product>[].obs;
   RxList<Product> dataProductChip = <Product>[].obs;
@@ -14,6 +14,11 @@ class HomeController extends GetxController {
   get selectedChip => this._selectedChip.value;
   set selectedChip(index) => this._selectedChip.value = index;
   Box<Product> productBox;
+  TabController controller;
+  final List<MyTabs> _tabs = [new MyTabs(title: "Accueil"),
+  new MyTabs(title: "Noter"),new MyTabs(title: "Video"),];
+  Rx<MyTabs> myHandler ;
+
   @override
   void onInit() async {
     super.onInit();
@@ -21,6 +26,13 @@ class HomeController extends GetxController {
     readProduct();
     productBox = Hive.box<Product>(productBoxName);
     getChipProduct(productChip.values[0]);
+
+    controller = new TabController(vsync: this,length: 3);
+    myHandler = _tabs[0].obs;
+    controller.addListener(_handleSelected);
+  }
+  void _handleSelected() {
+    myHandler.value=_tabs[controller.index];
   }
   @override
   void dispose() {
@@ -52,11 +64,11 @@ class HomeController extends GetxController {
   List<dynamic> getChipProduct(productChip chip) {
     switch (chip) {
       case productChip.TOUT:
-        dataProductChip.value=dataProduct.reversed.toList()..shuffle();
+        dataProductChip.value=dataProduct.toList()..shuffle();
         return  dataProductChip;
 
       case productChip.RECENT:
-        dataProductChip.value = dataProduct.toList()..shuffle();
+        dataProductChip.value = dataProduct.reversed.toList()..shuffle();
         return  dataProductChip;
 
       case productChip.MIEUX_NOTE:

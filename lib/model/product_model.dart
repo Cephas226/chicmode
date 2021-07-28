@@ -54,4 +54,9 @@ class Product {
     return '{productId: $productId, url: $url,vues:$vues,note:$note,categorie:$categorie,favorite:$favorite}';
   }
 }
+class MyTabs {
+  String title;
+  MyTabs({this.title});
+}
+
 enum productChip { TOUT, RECENT,MIEUX_NOTE, ALEATOIRE }
