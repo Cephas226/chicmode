@@ -79,21 +79,19 @@ class HomeController extends GetxController {
   List<dynamic> getChipProduct(productChip chip) {
     switch (chip) {
       case productChip.TOUT:
-        dataProductChip.value=dataProduct.reversed.toList();
-        print(dataProductChip);
+        dataProductChip.value=dataProduct.reversed.toList()..shuffle();
         return  dataProductChip;
 
       case productChip.RECENT:
-        dataProductChip.value = dataProduct;
-        print(dataProductChip);
+        dataProductChip.value = dataProduct.toList()..shuffle();
         return  dataProductChip;
 
       case productChip.MIEUX_NOTE:
-        dataProductChip.value = dataProduct.where((o) => o.note >3).toList();
+        dataProductChip.value = dataProduct.where((o) => o.note >3).toList()..shuffle();
         return dataProductChip;
 
       case productChip.ALEATOIRE:
-        return dataProductChip.toList();
+        return dataProductChip.toList()..shuffle();
     }
     return dataProductChip;
   }

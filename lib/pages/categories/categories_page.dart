@@ -53,80 +53,77 @@ class CategoriesPage extends GetView<CategoriesController> {
                                 return
                                   GestureDetector(
                                     onTap:(){
-                                      Navigator.of(context).push(MaterialPageRoute<void>(
-                                          builder: (BuildContext context) {
-                                            return Scaffold(
-
-                                              //floatingActionButton: buildSpeedDial(xCriteria[index]["url"], xCriteria[index]["productId"],context),
-                                              appBar: AppBar(
-                                                backgroundColor: Color(0xFFF70759),
-                                                title: const Text('Details'),
+                                      Get.to(()=>Scaffold(
+                                        //floatingActionButton: buildSpeedDial(xCriteria[index]["url"], xCriteria[index]["productId"],context),
+                                        appBar: AppBar(
+                                          backgroundColor: Color(0xFFF70759),
+                                          title: const Text('Details'),
+                                        ),
+                                        body:Stack(
+                                          fit:StackFit.passthrough,
+                                          children: [
+                                            Card(
+                                              shape: RoundedRectangleBorder(
+                                                  borderRadius: BorderRadiusDirectional.circular(20)),
+                                              clipBehavior: Clip.antiAlias,
+                                              child: Container(
+                                                padding: const EdgeInsets.all(0.0),
+                                                height: double.infinity,
+                                                color: Color(0xFFF70759),
+                                                child: PhotoHero(
+                                                  photo:  xCriteria[index]["url"],
+                                                  width: double.infinity,
+                                                  height: double.infinity,
+                                                  onTap: () {
+                                                    Navigator.of(context).pop();
+                                                  },
+                                                ),
                                               ),
-                                              body:Stack(
-                                                fit:StackFit.passthrough,
-                                                children: [
-                                                  Card(
-                                                    shape: RoundedRectangleBorder(
-                                                        borderRadius: BorderRadiusDirectional.circular(20)),
-                                                    clipBehavior: Clip.antiAlias,
-                                                    child: Container(
-                                                      padding: const EdgeInsets.all(0.0),
-                                                      height: double.infinity,
-                                                      color: Color(0xFFF70759),
-                                                      child: PhotoHero(
-                                                        photo:  xCriteria[index]["url"],
-                                                        width: double.infinity,
-                                                        height: double.infinity,
-                                                        onTap: () {
-                                                          Navigator.of(context).pop();
-                                                        },
-                                                      ),
-                                                    ),
-                                                  ),
-                                                  Padding(padding: EdgeInsets.only(bottom:65, right:10),
-                                                      child:Align(alignment: Alignment.bottomRight,
-                                                        child: Container(
-                                                          width: 70,
-                                                          height: 400,
+                                            ),
+                                            Padding(padding: EdgeInsets.only(bottom:65, right:10),
+                                                child:Align(alignment: Alignment.bottomRight,
+                                                  child: Container(
+                                                    width: 70,
+                                                    height: 400,
+                                                    child: Column(
+                                                      mainAxisAlignment: MainAxisAlignment.end,
+                                                      children: <Widget>[
+                                                        Container(
+                                                          padding: EdgeInsets.only(bottom:25),
                                                           child: Column(
-                                                            mainAxisAlignment: MainAxisAlignment.end,
+                                                            crossAxisAlignment: CrossAxisAlignment.center,
                                                             children: <Widget>[
-                                                              Container(
-                                                                padding: EdgeInsets.only(bottom:25),
-                                                                child: Column(
-                                                                  crossAxisAlignment: CrossAxisAlignment.center,
-                                                                  children: <Widget>[
-                                                                    Icon(Icons.remove_red_eye, size:35, color: Colors.white),
-                                                                    Text(xCriteria[index]["vues"].toString(), style:TextStyle(color: Colors.white))
-                                                                  ],
-                                                                ),
-                                                              ),
-                                                              Container(
-                                                                padding: EdgeInsets.only(bottom:20),
-                                                                child: Column(
-                                                                  crossAxisAlignment: CrossAxisAlignment.center,
-                                                                  children: <Widget>[
-                                                                    Transform(alignment:Alignment.center,transform: Matrix4.rotationY(math.pi), child: Icon(Icons.star_rate_outlined, size:35, color:Colors.white)),
-                                                                    Text(xCriteria[index]["note"].toString(), style:TextStyle(color: Colors.white))
-                                                                  ],
-                                                                ),
-                                                              ),
-                                                              GestureDetector(
-                                                                  onTap: ()=>{
+                                                              Icon(Icons.remove_red_eye, size:35, color: Colors.white),
+                                                              Text(xCriteria[index]["vues"].toString(), style:TextStyle(color: Colors.white))
+                                                            ],
+                                                          ),
+                                                        ),
+                                                        Container(
+                                                          padding: EdgeInsets.only(bottom:20),
+                                                          child: Column(
+                                                            crossAxisAlignment: CrossAxisAlignment.center,
+                                                            children: <Widget>[
+                                                              Transform(alignment:Alignment.center,transform: Matrix4.rotationY(math.pi), child: Icon(Icons.star_rate_outlined, size:35, color:Colors.white)),
+                                                              Text(xCriteria[index]["note"].toString(), style:TextStyle(color: Colors.white))
+                                                            ],
+                                                          ),
+                                                        ),
+                                                        GestureDetector(
+                                                          onTap: ()=>{
 
-                                                                  },
-                                                                child: Container(
-                                                                  padding: EdgeInsets.only(bottom:50),
-                                                                  child: Column(
-                                                                    crossAxisAlignment: CrossAxisAlignment.center,
-                                                                    children: <Widget>[
-                                                                      Transform(alignment:Alignment.center,transform: Matrix4.rotationY(math.pi), child: Icon(Icons.reply, size:35, color:Colors.white)),
-                                                                      Text('Partager', style:TextStyle(color: Colors.white))
-                                                                    ],
-                                                                  ),
-                                                                ),
-                                                              )
-                                                              /*AnimatedBuilder(
+                                                          },
+                                                          child: Container(
+                                                            padding: EdgeInsets.only(bottom:50),
+                                                            child: Column(
+                                                              crossAxisAlignment: CrossAxisAlignment.center,
+                                                              children: <Widget>[
+                                                                Transform(alignment:Alignment.center,transform: Matrix4.rotationY(math.pi), child: Icon(Icons.reply, size:35, color:Colors.white)),
+                                                                Text('Partager', style:TextStyle(color: Colors.white))
+                                                              ],
+                                                            ),
+                                                          ),
+                                                        )
+                                                        /*AnimatedBuilder(
                       animation: animationController,
                       child: CircleAvatar(
                         radius: 22,
@@ -140,13 +137,11 @@ class CategoriesPage extends GetView<CategoriesController> {
                         return Transform.rotate(angle: animationController.value*6.3,
                             child:_widget);
                       },)*/
-                                                            ],
-                                                          ),
-                                                        ),))
-                                                ],
-                                              ),
-                                            );
-                                          }
+                                                      ],
+                                                    ),
+                                                  ),))
+                                          ],
+                                        ),
                                       ));
                                     },
                                     child:
