@@ -7,9 +7,9 @@
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:259439054813:android:c744a7cc58a5c787057034",
+        "mobilesdk_app_id": "1:259439054813:android:ca8d13b0cc372c8e057034",
         "android_client_info": {
-          "package_name": "com.example.chicmode"
+          "package_name": "com.hopecode.chicmode"
         }
       },
       "oauth_client": [

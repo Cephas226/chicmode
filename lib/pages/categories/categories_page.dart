@@ -57,7 +57,7 @@ class CategoriesPage extends GetView<CategoriesController> {
                                           builder: (BuildContext context) {
                                             return Scaffold(
 
-                                              floatingActionButton: buildSpeedDial(xCriteria[index]["url"], xCriteria[index]["productId"],context),
+                                              //floatingActionButton: buildSpeedDial(xCriteria[index]["url"], xCriteria[index]["productId"],context),
                                               appBar: AppBar(
                                                 backgroundColor: Color(0xFFF70759),
                                                 title: const Text('Details'),
@@ -113,12 +113,7 @@ class CategoriesPage extends GetView<CategoriesController> {
                                                               ),
                                                               GestureDetector(
                                                                   onTap: ()=>{
-                                                                    if (permission() != null){
-                                                                      _shareImage(
-                                                                          xCriteria[index]["url"],
-                                                                          xCriteria[index]["productId"],
-                                                                          context)
-                                                                    }
+
                                                                   },
                                                                 child: Container(
                                                                   padding: EdgeInsets.only(bottom:50),

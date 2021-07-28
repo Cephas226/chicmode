@@ -3,17 +3,13 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:getx_app/model/product_model.dart';
-import 'package:getx_app/services/backend_service.dart';
 import 'package:hive/hive.dart';
 import 'package:getx_app/domain/request.dart';
-import 'package:http/http.dart' as http;
-import 'package:permission_handler/permission_handler.dart';
 class HomeController extends GetxController {
   String titlex = 'Accueil';
   RxList<Product> dataProduct = <Product>[].obs;
   RxList<Product> dataProductChip = <Product>[].obs;
   bool favorite= false;
-  RxBool permissionGranted=false.obs;
   String productBoxName = 'product';
   //Gestion des chip
 
@@ -32,17 +28,19 @@ class HomeController extends GetxController {
 
   //Box
   Box<Product> productBox;
-  static var client = http.Client();
+
   @override
   void onInit() async {
     super.onInit();
-   // getChipProduct(productChip.TOUT);
+    selectedChip=0;
     readProduct();
     //await Hive.openBox<Product>(productBoxName);
 
     productBox = Hive.box<Product>(productBoxName);
     //
     setTabName(0);
+    getChipProduct(productChip
+        .values[0]);
   }
   @override
   void dispose() {
@@ -67,7 +65,7 @@ class HomeController extends GetxController {
   addProduct(Product prod,context) async {
     productBox.add(prod);
     //print(productBox);
-  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Enregistré dans favoris')));
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Enregistré dans favoris')));
   }
   void removeProduct(int id) async{
     //var producBox = await Hive.openBox(productBox);
@@ -79,31 +77,26 @@ class HomeController extends GetxController {
     update(['favorite', true]);
   }
 
-  Future<List> fetchProduct() async {
-    final response =
-    await client.get(Uri.parse("https://myafricanstyle.herokuapp.com/product"));
-
-    if (response.statusCode == 200)
-      return dataProduct.value = jsonDecode(response.body).map((e) => Product.fromJson(e)).toList();
-    return [];
-  }
-
-  Future<List> getChipProduct(productChip chip) {
-    print("hello");
+  List<dynamic> getChipProduct(productChip chip) {
     switch (chip) {
       case productChip.TOUT:
-       return  fetchProduct().then((value) => value.toList()..shuffle());
+        dataProductChip.value=dataProduct.reversed.toList();
+        print(dataProductChip);
+        return  dataProductChip;
 
       case productChip.RECENT:
-        return  fetchProduct().then((value) => value.reversed.toList());
+        dataProductChip.value = dataProduct;
+        print(dataProductChip);
+        return  dataProductChip;
 
       case productChip.MIEUX_NOTE:
-        return fetchProduct().then((value) => value.toList());
+        dataProductChip.value = dataProduct.where((o) => o.note >3).toList();
+        return dataProductChip;
 
       case productChip.ALEATOIRE:
-        return fetchProduct().then((value) => value.reversed.toList());
+        return dataProductChip.toList();
     }
-    return fetchProduct();
+    return dataProductChip;
   }
   String setTabName(int index) {
     switch (index) {
@@ -121,6 +114,4 @@ class HomeController extends GetxController {
     }
     return titlex;
   }
-
-
 }

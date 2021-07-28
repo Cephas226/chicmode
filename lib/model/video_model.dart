@@ -34,4 +34,3 @@ class Video {
     return 'Video{videoId: $videoId, url: $url, name: $name}';
   }
 }
-enum productChip { TOUT, RECENT,MIEUX_NOTE, ALEATOIRE }

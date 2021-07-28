@@ -1,4 +1,4 @@
-package com.example.chicmode
+package com.hopecode.chicmode
 
 import io.flutter.embedding.android.FlutterActivity
 
