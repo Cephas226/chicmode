@@ -77,34 +77,7 @@ class HomePage extends GetView<HomeController> {
                       Obx(() => Expanded(
                             child: Container(
                               margin: EdgeInsets.all(12),
-                              child:
-                              _detailStaggeredGridView(context,controller,_prodController.dataProduct)
-                              /*StaggeredGridView.countBuilder(
-                                  crossAxisCount: 2,
-                                  crossAxisSpacing: 10,
-                                  mainAxisSpacing: 12,
-                                  itemCount: _prodController.dataProduct.length,
-                                  itemBuilder: (context, index) {
-                                    return Container(
-                                      decoration: BoxDecoration(
-                                          color: Colors.transparent,
-                                          borderRadius: BorderRadius.all(
-                                              Radius.circular(15))),
-                                      child: ClipRRect(
-                                        borderRadius: BorderRadius.all(
-                                            Radius.circular(15)),
-                                        child: FadeInImage.memoryNetwork(
-                                          placeholder: kTransparentImage,
-                                          image: _prodController.dataProductChip[index].url,
-                                          fit: BoxFit.cover,
-                                        ),
-                                      ),
-                                    );
-                                  },
-                                  staggeredTileBuilder: (index) {
-                                    return StaggeredTile.count(
-                                        1, index.isEven ? 1.2 : 1.8);
-                                  })*/,
+                              child: _detailx(context, _prodController),
                             ),
                           )),
                     ],
@@ -320,89 +293,107 @@ Widget _details(context, item, meIndex) {
   );
 }
 
-Widget _detailStaggeredGridView(context, controller,data) {
+Widget _detailx(context, controller) {
   return Scaffold(
-    body: StaggeredGridView.countBuilder(
+    body:
+    StaggeredGridView.countBuilder(
       crossAxisCount: 4,
       padding: const EdgeInsets.all(2.0),
-      itemCount: data.length,
-      itemBuilder: (BuildContext context, int index) => Container(
-        decoration: BoxDecoration(
-            color: Colors.transparent,
-            borderRadius: BorderRadius.all(Radius.circular(12))),
-        child: ClipRRect(
-            borderRadius: BorderRadius.all(Radius.circular(12)),
-            child: Stack(
-              clipBehavior: Clip.none,
-              fit: StackFit.passthrough,
-              children: [
-                GestureDetector(
-                  onTap: () {
-                    Get.to(_details(
-                        context, data.reversed.toList(), index));
-                  },
-                  child: Card(
-                    shape: RoundedRectangleBorder(
-                        borderRadius:
-                        BorderRadiusDirectional.circular(20)),
-                    clipBehavior: Clip.antiAlias,
-                    child: FadeInImage.memoryNetwork(
-                        placeholder: kTransparentImage,
-                        image: data.reversed.toList()[index].url,
-                        fit: BoxFit.cover),
-                  ),
-                ),
-                Positioned(
-                    left: 130,
-                    top: 0,
-                    child: Center(
-                      child: Container(
-                        child: Column(
-                          children: [
-                            IconButton(
-                              onPressed: () {
-                                Get.to(_details(context,
-                                    data.reversed.toList(), index));
-                              },
-                              icon: Icon(
-                                Icons.remove_red_eye_sharp,
-                                color: Colors.white70,
-                              ),
-                            ),
-                            IconButton(
-                                onPressed: () => {},
-                                icon: FavoriteButton(
-                                    iconSize: 40,
-                                    isFavorite: false,
-                                    valueChanged: (_isFavorite) {
-                                      if (_isFavorite) {
-                                        controller.addProduct(
-                                            data, context);
-                                      }
-                                    })),
-                            IconButton(
-                                onPressed: () async => {
-                                  _saveImage(
-                                      data[index]["url"],
-                                      data[index]["productId"],
-                                      context),
-                                },
-                                icon: Icon(
-                                  Icons.file_download,
-                                  color: Colors.white70,
-                                )),
-                          ],
-                        ),
-                        decoration: new BoxDecoration(
-                            color: Colors.black26,
-                            borderRadius: BorderRadius.all(
-                                Radius.circular(10))),
+      itemCount: controller.dataProductChip.length,
+      itemBuilder: (BuildContext context, int index) =>
+          Container(
+            decoration: BoxDecoration(
+                color: Colors.transparent,
+                borderRadius: BorderRadius.all(
+                    Radius.circular(12))),
+            child:
+            ClipRRect(
+                borderRadius:
+                BorderRadius.all(Radius.circular(12)),
+                child: Stack(
+                  clipBehavior: Clip.none, fit: StackFit.passthrough,
+                  children: [
+                    GestureDetector(
+                      onTap: () {
+                        Get.to(_details(context, controller.dataProductChip,index));
+                        /*Navigator.of(context).push(
+                                  MaterialPageRoute<void>(
+                                      builder: (BuildContext
+                                      context) {
+                                        return _details(context, data.reversed.toList(),index);
+                                      }));*/
+                      },
+                      child: Card(
+                        shape: RoundedRectangleBorder(
+                            borderRadius:
+                            BorderRadiusDirectional
+                                .circular(20)),
+                        clipBehavior: Clip.antiAlias,
+                        child: FadeInImage.memoryNetwork(
+                            placeholder:
+                            kTransparentImage,
+                            image: controller.dataProductChip[index].url,
+                            fit: BoxFit.cover),
                       ),
-                    )),
-              ],
-            )),
-      ),
-      staggeredTileBuilder: (int index) => new StaggeredTile.fit(2),
+                    ),
+                    Positioned(
+                        left: 130,
+                        top: 0,
+                        child: Center(
+                          child: Container(
+                            child: Column(
+                              children: [
+                                IconButton(
+                                  onPressed: () {
+                                    Get.to(_details(context, controller.dataProductChip,index));
+                                  },
+                                  icon: Icon(
+                                    Icons
+                                        .remove_red_eye_sharp,
+                                    color: Colors.white70,
+                                  ),
+                                ),
+                                IconButton(
+                                    onPressed: () => {},
+                                    icon: FavoriteButton(
+                                        iconSize: 40,
+                                        isFavorite: false,
+                                        valueChanged:
+                                            (_isFavorite) {
+                                          if (_isFavorite) {
+                                            controller.addProduct(
+                                                controller.dataProductChip,
+                                                context);
+                                          }
+                                        })),
+                                IconButton(
+                                    onPressed: () async =>
+                                    {
+                                      _saveImage(
+                                          controller.dataProductChip[index]["url"],
+                                          controller.dataProductChip[index]["productId"],
+                                          context),
+                                    },
+                                    icon: Icon(
+                                      Icons.file_download,
+                                      color:
+                                      Colors.white70,
+                                    )),
+                              ],
+                            ),
+                            decoration: new BoxDecoration(
+                                color: Colors.black26,
+                                borderRadius:
+                                BorderRadius.all(
+                                    Radius.circular(
+                                        10))),
+                          ),
+                        )),
+                  ],
+                )),
+          ),
+      staggeredTileBuilder: (int index) =>
+      new StaggeredTile.fit(2),
       mainAxisSpacing: 3.0,
       crossAxisSpacing: 4.0, //
     ),
