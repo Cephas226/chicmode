@@ -1,5 +1,6 @@
 import 'dart:typed_data';
 
+import 'package:carousel_slider/carousel_slider.dart';
 import 'package:favorite_button/favorite_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
@@ -45,7 +46,7 @@ class CategoriesPage extends GetView<CategoriesController> {
                               itemCount:xCriteria.length,
                               gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                                 crossAxisCount: MediaQuery.of(context).orientation ==
-                                    Orientation.landscape ? 3: 2,
+                                    Orientation.landscape ? 3: 3,
                                 crossAxisSpacing: 2,
                                 mainAxisSpacing: 2,
                               ),
@@ -54,93 +55,111 @@ class CategoriesPage extends GetView<CategoriesController> {
                                   GestureDetector(
                                     onTap:(){
                                       Get.to(()=>Scaffold(
-                                        //floatingActionButton: buildSpeedDial(xCriteria[index]["url"], xCriteria[index]["productId"],context),
+                                        floatingActionButton: buildSpeedDial(),
                                         appBar: AppBar(
                                           backgroundColor: Color(0xFFF70759),
                                           title: const Text('Details'),
                                         ),
-                                        body:Stack(
-                                          fit:StackFit.passthrough,
-                                          children: [
-                                            Card(
-                                              shape: RoundedRectangleBorder(
-                                                  borderRadius: BorderRadiusDirectional.circular(20)),
-                                              clipBehavior: Clip.antiAlias,
-                                              child: Container(
-                                                padding: const EdgeInsets.all(0.0),
-                                                height: double.infinity,
-                                                color: Color(0xFFF70759),
-                                                child: PhotoHero(
-                                                  photo:  xCriteria[index]["url"],
-                                                  width: double.infinity,
-                                                  height: double.infinity,
-                                                  onTap: () {
-                                                    Navigator.of(context).pop();
-                                                  },
-                                                ),
-                                              ),
-                                            ),
-                                            Padding(padding: EdgeInsets.only(bottom:65, right:10),
-                                                child:Align(alignment: Alignment.bottomRight,
-                                                  child: Container(
-                                                    width: 70,
-                                                    height: 400,
-                                                    child: Column(
-                                                      mainAxisAlignment: MainAxisAlignment.end,
-                                                      children: <Widget>[
-                                                        Container(
-                                                          padding: EdgeInsets.only(bottom:25),
-                                                          child: Column(
-                                                            crossAxisAlignment: CrossAxisAlignment.center,
-                                                            children: <Widget>[
-                                                              Icon(Icons.remove_red_eye, size:35, color: Colors.white),
-                                                              Text(xCriteria[index]["vues"].toString(), style:TextStyle(color: Colors.white))
-                                                            ],
-                                                          ),
-                                                        ),
-                                                        Container(
-                                                          padding: EdgeInsets.only(bottom:20),
-                                                          child: Column(
-                                                            crossAxisAlignment: CrossAxisAlignment.center,
-                                                            children: <Widget>[
-                                                              Transform(alignment:Alignment.center,transform: Matrix4.rotationY(math.pi), child: Icon(Icons.star_rate_outlined, size:35, color:Colors.white)),
-                                                              Text(xCriteria[index]["note"].toString(), style:TextStyle(color: Colors.white))
-                                                            ],
-                                                          ),
-                                                        ),
-                                                        GestureDetector(
-                                                          onTap: ()=>{
-
-                                                          },
+                                        body: CarouselSlider.builder(
+                                          itemCount: xCriteria.length,
+                                          options: CarouselOptions(
+                                            height: 800,
+                                            scrollDirection: Axis.vertical,
+                                            initialPage: index,
+                                            viewportFraction: 1,
+                                            aspectRatio: 16 / 9,
+                                            enableInfiniteScroll: true,
+                                            autoPlay: false,
+                                          ),
+                                          itemBuilder: (BuildContext context, int itemIndex,
+                                              int pageViewIndex) =>
+                                              Stack(
+                                                children: <Widget>[
+                                                  Card(
+                                                    shape: RoundedRectangleBorder(
+                                                        borderRadius: BorderRadiusDirectional.circular(20)),
+                                                    clipBehavior: Clip.antiAlias,
+                                                    child: Container(
+                                                      padding: const EdgeInsets.all(0.0),
+                                                      height: double.infinity,
+                                                      color: Color(0xFFF70759),
+                                                      child: PhotoHero(
+                                                        photo:xCriteria[itemIndex]["url"],
+                                                        width: double.infinity,
+                                                        height: double.infinity,
+                                                        onTap: () {
+                                                          Get.back();
+                                                        },
+                                                      ),
+                                                    ),
+                                                  ),
+                                                  Padding(
+                                                      padding: EdgeInsets.only(bottom: 65, right: 10),
+                                                      child: Align(
+                                                          alignment: Alignment.bottomRight,
                                                           child: Container(
-                                                            padding: EdgeInsets.only(bottom:50),
+                                                            width: 70,
+                                                            height: 400,
                                                             child: Column(
-                                                              crossAxisAlignment: CrossAxisAlignment.center,
+                                                              mainAxisAlignment: MainAxisAlignment.end,
                                                               children: <Widget>[
-                                                                Transform(alignment:Alignment.center,transform: Matrix4.rotationY(math.pi), child: Icon(Icons.reply, size:35, color:Colors.white)),
-                                                                Text('Partager', style:TextStyle(color: Colors.white))
+                                                                Container(
+                                                                  padding: EdgeInsets.only(bottom: 25),
+                                                                  child: Column(
+                                                                    crossAxisAlignment:
+                                                                    CrossAxisAlignment.center,
+                                                                    children: <Widget>[
+                                                                      Icon(Icons.favorite,
+                                                                          size: 35, color: Colors.white),
+                                                                      Text('427.9K',
+                                                                          style: TextStyle(
+                                                                              color: Colors.white))
+                                                                    ],
+                                                                  ),
+                                                                ),
+                                                                Container(
+                                                                  padding: EdgeInsets.only(bottom: 20),
+                                                                  child: Column(
+                                                                    crossAxisAlignment:
+                                                                    CrossAxisAlignment.center,
+                                                                    children: <Widget>[
+                                                                      Transform(
+                                                                          alignment: Alignment.center,
+                                                                          transform:
+                                                                          Matrix4.rotationY(math.pi),
+                                                                          child: Icon(Icons.sms,
+                                                                              size: 35,
+                                                                              color: Colors.white)),
+                                                                      Text('2051',
+                                                                          style: TextStyle(
+                                                                              color: Colors.white))
+                                                                    ],
+                                                                  ),
+                                                                ),
+                                                                Container(
+                                                                  padding: EdgeInsets.only(bottom: 50),
+                                                                  child: Column(
+                                                                    crossAxisAlignment:
+                                                                    CrossAxisAlignment.center,
+                                                                    children: <Widget>[
+                                                                      Transform(
+                                                                          alignment: Alignment.center,
+                                                                          transform:
+                                                                          Matrix4.rotationY(math.pi),
+                                                                          child: Icon(Icons.reply,
+                                                                              size: 35,
+                                                                              color: Colors.white)),
+                                                                      Text('Partager',
+                                                                          style: TextStyle(
+                                                                              color: Colors.white))
+                                                                    ],
+                                                                  ),
+                                                                ),
                                                               ],
                                                             ),
-                                                          ),
-                                                        )
-                                                        /*AnimatedBuilder(
-                      animation: animationController,
-                      child: CircleAvatar(
-                        radius: 22,
-                        backgroundColor: Color(0x222222).withOpacity(1),
-                        child: CircleAvatar(
-                          radius: 12,
-                          backgroundImage: AssetImage('assets/oboy.jpg'),
-                        ),
-                      ),
-                      builder: (context, _widget){
-                        return Transform.rotate(angle: animationController.value*6.3,
-                            child:_widget);
-                      },)*/
-                                                      ],
-                                                    ),
-                                                  ),))
-                                          ],
+                                                          ))),
+                                                ],
+                                              ),
                                         ),
                                       ));
                                     },

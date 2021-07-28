@@ -12,6 +12,8 @@ import 'package:getx_app/services/backend_service.dart';
 import 'package:getx_app/widget/photo_widget/photohero.dart';
 import 'package:image_gallery_saver/image_gallery_saver.dart';
 import 'package:http/http.dart' as http;
+import 'package:permission_handler/permission_handler.dart';
+import 'package:share/share.dart';
 import 'package:transparent_image/transparent_image.dart';
 import 'package:favorite_button/favorite_button.dart';
 import '../../main.dart';
@@ -172,127 +174,6 @@ class HomePage extends GetView<HomeController> {
   }
 }
 
-Widget _details(context, item, meIndex) {
-  return Scaffold(
-    floatingActionButton: buildSpeedDial(),
-    appBar: AppBar(
-      backgroundColor: Color(0xFFF70759),
-      title: const Text('Details'),
-    ),
-    body: FutureBuilder(
-        future: Dataservices.fetchProductx(),
-        builder: (context, AsyncSnapshot<List<dynamic>> snapshot) {
-          final data = snapshot.data;
-          return snapshot.hasData
-              ?
-          CarouselSlider.builder(
-                  itemCount: snapshot.data.length,
-                  options: CarouselOptions(
-                    height: 800,
-                    scrollDirection: Axis.vertical,
-                    initialPage: meIndex,
-                    viewportFraction: 1,
-                    aspectRatio: 16 / 9,
-                    enableInfiniteScroll: false,
-                    autoPlay: false,
-                  ),
-                  itemBuilder: (BuildContext context, int itemIndex,
-                          int pageViewIndex) =>
-                      Stack(
-                    children: <Widget>[
-                      Card(
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadiusDirectional.circular(20)),
-                        clipBehavior: Clip.antiAlias,
-                        child: Container(
-                          padding: const EdgeInsets.all(0.0),
-                          height: double.infinity,
-                          color: Color(0xFFF70759),
-                          child: PhotoHero(
-                            photo: data[itemIndex]["url"],
-                            width: double.infinity,
-                            height: double.infinity,
-                            onTap: () {
-                              Get.back();
-                            },
-                          ),
-                        ),
-                      ),
-                      Padding(
-                          padding: EdgeInsets.only(bottom: 65, right: 10),
-                          child: Align(
-                              alignment: Alignment.bottomRight,
-                              child: Container(
-                                width: 70,
-                                height: 400,
-                                child: Column(
-                                  mainAxisAlignment: MainAxisAlignment.end,
-                                  children: <Widget>[
-                                    Container(
-                                      padding: EdgeInsets.only(bottom: 25),
-                                      child: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.center,
-                                        children: <Widget>[
-                                          Icon(Icons.favorite,
-                                              size: 35, color: Colors.white),
-                                          Text('427.9K',
-                                              style: TextStyle(
-                                                  color: Colors.white))
-                                        ],
-                                      ),
-                                    ),
-                                    Container(
-                                      padding: EdgeInsets.only(bottom: 20),
-                                      child: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.center,
-                                        children: <Widget>[
-                                          Transform(
-                                              alignment: Alignment.center,
-                                              transform:
-                                                  Matrix4.rotationY(math.pi),
-                                              child: Icon(Icons.sms,
-                                                  size: 35,
-                                                  color: Colors.white)),
-                                          Text('2051',
-                                              style: TextStyle(
-                                                  color: Colors.white))
-                                        ],
-                                      ),
-                                    ),
-                                    Container(
-                                      padding: EdgeInsets.only(bottom: 50),
-                                      child: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.center,
-                                        children: <Widget>[
-                                          Transform(
-                                              alignment: Alignment.center,
-                                              transform:
-                                                  Matrix4.rotationY(math.pi),
-                                              child: Icon(Icons.reply,
-                                                  size: 35,
-                                                  color: Colors.white)),
-                                          Text('Partager',
-                                              style: TextStyle(
-                                                  color: Colors.white))
-                                        ],
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ))),
-                    ],
-                  ),
-                )
-              : Center(
-                  child: CircularProgressIndicator(),
-                );
-        }),
-  );
-}
-
 Widget _detailStaggeredGridView(context, controller) {
   return Scaffold(
     body:
@@ -357,70 +238,75 @@ Widget _detailStaggeredGridView(context, controller) {
                                           ),
                                         ),
                                         Padding(
-                                            padding: EdgeInsets.only(bottom: 65, right: 10),
-                                            child: Align(
-                                                alignment: Alignment.bottomRight,
-                                                child: Container(
-                                                  width: 70,
-                                                  height: 400,
-                                                  child: Column(
-                                                    mainAxisAlignment: MainAxisAlignment.end,
-                                                    children: <Widget>[
-                                                      Container(
-                                                        padding: EdgeInsets.only(bottom: 25),
-                                                        child: Column(
-                                                          crossAxisAlignment:
-                                                          CrossAxisAlignment.center,
-                                                          children: <Widget>[
-                                                            Icon(Icons.favorite,
-                                                                size: 35, color: Colors.white),
-                                                            Text('427.9K',
-                                                                style: TextStyle(
-                                                                    color: Colors.white))
-                                                          ],
-                                                        ),
-                                                      ),
-                                                      Container(
-                                                        padding: EdgeInsets.only(bottom: 20),
-                                                        child: Column(
-                                                          crossAxisAlignment:
-                                                          CrossAxisAlignment.center,
-                                                          children: <Widget>[
-                                                            Transform(
-                                                                alignment: Alignment.center,
-                                                                transform:
-                                                                Matrix4.rotationY(math.pi),
-                                                                child: Icon(Icons.sms,
-                                                                    size: 35,
-                                                                    color: Colors.white)),
-                                                            Text('2051',
-                                                                style: TextStyle(
-                                                                    color: Colors.white))
-                                                          ],
-                                                        ),
-                                                      ),
-                                                      Container(
-                                                        padding: EdgeInsets.only(bottom: 50),
-                                                        child: Column(
-                                                          crossAxisAlignment:
-                                                          CrossAxisAlignment.center,
-                                                          children: <Widget>[
-                                                            Transform(
-                                                                alignment: Alignment.center,
-                                                                transform:
-                                                                Matrix4.rotationY(math.pi),
-                                                                child: Icon(Icons.reply,
-                                                                    size: 35,
-                                                                    color: Colors.white)),
-                                                            Text('Partager',
-                                                                style: TextStyle(
-                                                                    color: Colors.white))
-                                                          ],
-                                                        ),
-                                                      ),
-                                                    ],
-                                                  ),
-                                                ))),
+                              padding: EdgeInsets.only(bottom: 65, right: 10),
+                              child: Align(
+                                  alignment: Alignment.bottomRight,
+                                  child: Container(
+                                    width: 70,
+                                    height: 400,
+                                    child: Column(
+                                      mainAxisAlignment: MainAxisAlignment.end,
+                                      children: <Widget>[
+                                        Container(
+                                          padding: EdgeInsets.only(bottom: 25),
+                                          child: Column(
+                                            crossAxisAlignment:
+                                            CrossAxisAlignment.center,
+                                            children: <Widget>[
+                                              Icon(Icons.remove_red_eye,
+                                                  size: 35, color: Colors.white),
+                                              Text(controller.dataProductChip[itemIndex].vues.toString(),
+                                                  style: TextStyle(
+                                                      color: Colors.white))
+                                            ],
+                                          ),
+                                        ),
+                                        Container(
+                                          padding: EdgeInsets.only(bottom: 20),
+                                          child: Column(
+                                            crossAxisAlignment:
+                                            CrossAxisAlignment.center,
+                                            children: <Widget>[
+                                              Transform(
+                                                  alignment: Alignment.center,
+                                                  transform:
+                                                  Matrix4.rotationY(math.pi),
+                                                  child: Icon(Icons.stars,
+                                                      size: 35,
+                                                      color: Colors.white)),
+                                              Text(controller.dataProductChip[itemIndex].note.toString(),
+                                                  style: TextStyle(
+                                                      color: Colors.white))
+                                            ],
+                                          ),
+                                        ),
+                                        GestureDetector(
+                                          onTap: ()=>{
+                                            _shareImage(controller.dataProductChip[itemIndex].url,controller.dataProductChip[itemIndex].productId,context)
+                                          },
+                                          child: Container(
+                                            padding: EdgeInsets.only(bottom: 50),
+                                            child: Column(
+                                              crossAxisAlignment:
+                                              CrossAxisAlignment.center,
+                                              children: <Widget>[
+                                                Transform(
+                                                    alignment: Alignment.center,
+                                                    transform:
+                                                    Matrix4.rotationY(math.pi),
+                                                    child: Icon(Icons.reply,
+                                                        size: 35,
+                                                        color: Colors.white)),
+                                                Text('Partager',
+                                                    style: TextStyle(
+                                                        color: Colors.white))
+                                              ],
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ))),
                                       ],
                                     ),
                               ),
@@ -449,7 +335,119 @@ Widget _detailStaggeredGridView(context, controller) {
                               children: [
                                 IconButton(
                                   onPressed: () {
-                                    Get.to(()=>_details(context, controller.dataProductChip,index));
+                                    Get.to(()=>Scaffold(
+                                      floatingActionButton: buildSpeedDial(),
+                                      appBar: AppBar(
+                                        backgroundColor: Color(0xFFF70759),
+                                        title: const Text('Details'),
+                                      ),
+                                      body: CarouselSlider.builder(
+                                        itemCount: controller.dataProductChip.length,
+                                        options: CarouselOptions(
+                                          height: 800,
+                                          scrollDirection: Axis.vertical,
+                                          initialPage: index,
+                                          viewportFraction: 1,
+                                          aspectRatio: 16 / 9,
+                                          enableInfiniteScroll: false,
+                                          autoPlay: false,
+                                        ),
+                                        itemBuilder: (BuildContext context, int itemIndex,
+                                            int pageViewIndex) =>
+                                            Stack(
+                                              children: <Widget>[
+                                                Card(
+                                                  shape: RoundedRectangleBorder(
+                                                      borderRadius: BorderRadiusDirectional.circular(20)),
+                                                  clipBehavior: Clip.antiAlias,
+                                                  child: Container(
+                                                    padding: const EdgeInsets.all(0.0),
+                                                    height: double.infinity,
+                                                    color: Color(0xFFF70759),
+                                                    child: PhotoHero(
+                                                      photo: controller.dataProductChip[itemIndex].url,
+                                                      width: double.infinity,
+                                                      height: double.infinity,
+                                                      onTap: () {
+                                                        Get.back();
+                                                      },
+                                                    ),
+                                                  ),
+                                                ),
+                                                Padding(
+                                                    padding: EdgeInsets.only(bottom: 65, right: 10),
+                                                    child: Align(
+                                                        alignment: Alignment.bottomRight,
+                                                        child: Container(
+                                                          width: 70,
+                                                          height: 400,
+                                                          child: Column(
+                                                            mainAxisAlignment: MainAxisAlignment.end,
+                                                            children: <Widget>[
+                                                              Container(
+                                                                padding: EdgeInsets.only(bottom: 25),
+                                                                child: Column(
+                                                                  crossAxisAlignment:
+                                                                  CrossAxisAlignment.center,
+                                                                  children: <Widget>[
+                                                                    Icon(Icons.remove_red_eye,
+                                                                        size: 35, color: Colors.white),
+                                                                    Text(controller.dataProductChip[itemIndex].vues.toString(),
+                                                                        style: TextStyle(
+                                                                            color: Colors.white))
+                                                                  ],
+                                                                ),
+                                                              ),
+                                                              Container(
+                                                                padding: EdgeInsets.only(bottom: 20),
+                                                                child: Column(
+                                                                  crossAxisAlignment:
+                                                                  CrossAxisAlignment.center,
+                                                                  children: <Widget>[
+                                                                    Transform(
+                                                                        alignment: Alignment.center,
+                                                                        transform:
+                                                                        Matrix4.rotationY(math.pi),
+                                                                        child: Icon(Icons.stars,
+                                                                            size: 35,
+                                                                            color: Colors.white)),
+                                                                    Text(controller.dataProductChip[itemIndex].note.toString(),
+                                                                        style: TextStyle(
+                                                                            color: Colors.white))
+                                                                  ],
+                                                                ),
+                                                              ),
+                                                              GestureDetector(
+                                                                onTap: ()=>{
+                                                                  _shareImage(controller.dataProductChip[itemIndex].url,controller.dataProductChip[itemIndex].productId,context)
+                                                                },
+                                                                child: Container(
+                                                                  padding: EdgeInsets.only(bottom: 50),
+                                                                  child: Column(
+                                                                    crossAxisAlignment:
+                                                                    CrossAxisAlignment.center,
+                                                                    children: <Widget>[
+                                                                      Transform(
+                                                                          alignment: Alignment.center,
+                                                                          transform:
+                                                                          Matrix4.rotationY(math.pi),
+                                                                          child: Icon(Icons.reply,
+                                                                              size: 35,
+                                                                              color: Colors.white)),
+                                                                      Text('Partager',
+                                                                          style: TextStyle(
+                                                                              color: Colors.white))
+                                                                    ],
+                                                                  ),
+                                                                ),
+                                                              ),
+                                                            ],
+                                                          ),
+                                                        ))),
+                                              ],
+                                            ),
+                                      ),
+                                    ));
                                   },
                                   icon: Icon(
                                     Icons
@@ -506,16 +504,46 @@ Widget _detailStaggeredGridView(context, controller) {
 }
 
 _saveImage(url, name, context) async {
-  var client = http.Client();
-  var response = await client.get(Uri.parse(url));
-  final result = await ImageGallerySaver.saveImage(
-      Uint8List.fromList(response.bodyBytes),
-      quality: 60,
-      name: "model" + name.toString());
-  ScaffoldMessenger.of(context)
-      .showSnackBar(SnackBar(content: Text('Image sauvegardée avec succès')));
-}
+  if (await Permission.storage.request().isGranted) {
+    var client = http.Client();
+    var response = await client.get(Uri.parse(url));
+    final result = await ImageGallerySaver.saveImage(
+        Uint8List.fromList(response.bodyBytes),
+        quality: 60,
+        name: "model" + name.toString());
+    print(result["filePath"]);
+    Share.shareFiles([
+      result['filePath']
+          .toString()
+          .replaceAll(RegExp('file://'), '')
+    ], text: 'Great picture');
+  } else if (await Permission.storage.request().isPermanentlyDenied) {
+    await openAppSettings();
+  } else if (await Permission.storage.request().isDenied) {
 
+  }
+}
+_shareImage(url, name, context) async {
+  if (await Permission.storage.request().isGranted) {
+    var client = http.Client();
+    var response = await client.get(Uri.parse(url));
+    final result = await ImageGallerySaver.saveImage(
+        Uint8List.fromList(response.bodyBytes),
+        quality: 60,
+        name: "model" + name.toString());
+    print(result["filePath"]);
+    Share.shareFiles([
+      result['filePath']
+          .toString()
+          .replaceAll(RegExp('file://'), '')
+    ], text: 'Great picture');
+  } else if (await Permission.storage.request().isPermanentlyDenied) {
+    await openAppSettings();
+  }
+}
+Future _getStoragePermission() async {
+
+}
 SpeedDial buildSpeedDial() {
   return SpeedDial(
     animatedIcon: AnimatedIcons.menu_close,

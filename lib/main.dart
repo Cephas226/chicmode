@@ -48,7 +48,7 @@ class MainDrawer extends StatelessWidget {
 
 _buildDrawer() {
 
-  final String image = "https://firebasestorage.googleapis.com/v0/b/yasms-efe24.appspot.com/o/11.jpg?alt=media&token=ddc4fb15-001d-402f-bcb8-7e8fa09643d0";
+  final String image = "https://firebasestorage.googleapis.com/v0/b/africanstyle-15779.appspot.com/o/avatar.png?alt=media&token=664ebc08-a844-4ba0-8345-8bbf8fc4589a";
   return ClipPath(
     clipper: OvalRightBorderClipper(),
     child: Drawer(
@@ -85,11 +85,7 @@ _buildDrawer() {
                 ),
                 SizedBox(height: 5.0),
                 Text(
-                  "Cephas ZOUBGA",
-                  style: TextStyle(color: Colors.white, fontSize: 18.0),
-                ),
-                Text(
-                  "@cephaszoubga",
+                  "@ChicMode",
                   style: TextStyle(color: active, fontSize: 16.0),
                 ),
                 SizedBox(height: 30.0),
@@ -98,6 +94,8 @@ _buildDrawer() {
                 _buildRow(Icons.bookmark, "Mes favoris"),
                 _buildDivider(),
                 _buildRow(Icons.email, "Nous contacter"),
+                _buildDivider(),
+                _buildRow(Icons.phone_android_outlined, "Nos applications"),
                 _buildDivider(),
                 _buildRow(Icons.info_outline, "Aide"),
                 _buildDivider(),
