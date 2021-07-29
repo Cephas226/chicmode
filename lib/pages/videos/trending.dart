@@ -4,13 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:getwidget/components/loader/gf_loader.dart';
 import 'package:getwidget/types/gf_loader_type.dart';
 import 'package:getx_app/domain/request.dart';
-import 'package:getx_app/model/tiktok.dart';
-import 'package:getx_app/model/video_model.dart';
 import 'package:getx_app/widget/videoPlayer.dart';
 import 'package:http/http.dart' as http;
-
-import ' tiktokvideo.dart';
-
 class Trending extends StatefulWidget {
   @override
   _TrendingState createState() => _TrendingState();
@@ -22,8 +17,6 @@ class _TrendingState extends State<Trending> {
   List<Widget> tikTokVideos = [];
 
   getTrending() async {
-    var cookies = await api.getCookie();
-    api.setCookie(cookies);
     var response = await http.get(
       Uri.parse(api.uri),
     );
@@ -31,7 +24,7 @@ class _TrendingState extends State<Trending> {
     jsonDecode(response.body).forEach(
           (item) {
         setState(() {
-          tikTokVideos.add(TikTokVideoPlayer(url: item["url"]),);
+          tikTokVideos.add(TikTokVideoPlayer(url: item["url"]));
         });
       },
     );
@@ -62,7 +55,7 @@ class _TrendingState extends State<Trending> {
           ),
         )
       ]
-          : tikTokVideos,
+          : tikTokVideos.reversed.toList()..shuffle(),
     );
   }
 }
