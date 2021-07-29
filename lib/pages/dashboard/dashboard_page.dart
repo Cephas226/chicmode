@@ -26,7 +26,6 @@ class DashboardPage extends StatelessWidget {
               ],
             ),
           ),
-          drawer: _buildDrawer(),
           bottomNavigationBar: BottomNavigationBar(
             unselectedItemColor: Colors.black,
             selectedItemColor: Colors.redAccent,

@@ -28,8 +28,10 @@ class HomePage extends GetView<HomeController> {
   CarouselController carouselController = new CarouselController();
   String titlexy = 'Accueil';
   List<String> imageList = [];
+  var currentPos=0;
   @override
   Widget build(BuildContext context) {
+    CarouselController carouselController = new CarouselController();
     final List<String> _chipLabel = [
       'Tout',
       'Récent',
@@ -93,6 +95,7 @@ class HomePage extends GetView<HomeController> {
                       return snapshot.hasData
                           ? CarouselSlider.builder(
                               itemCount: snapshot.data.length,
+                              carouselController: carouselController,
                               options: CarouselOptions(
                                 height: 800,
                                 scrollDirection: Axis.vertical,
@@ -100,8 +103,7 @@ class HomePage extends GetView<HomeController> {
                                 viewportFraction: 1,
                                 aspectRatio: 16 / 9,
                                 enableInfiniteScroll: false,
-                                autoPlay: false,
-                              ),
+                                autoPlay: false),
                               itemBuilder: (BuildContext context, int itemIndex,
                                       int pageViewIndex) =>
                                   Stack(
@@ -117,12 +119,10 @@ class HomePage extends GetView<HomeController> {
                                       height: double.infinity,
                                       color: Color(0xFFF70759),
                                       child: PhotoHero(
-                                        photo: data.reversed.toList()[itemIndex]
-                                            ["url"],
+                                        photo: data.reversed.toList()[itemIndex]["url"],
                                         width: double.infinity,
                                         height: double.infinity,
                                         onTap: () {
-                                          print("cooly");
                                         },
                                       ),
                                     ),
@@ -146,9 +146,7 @@ class HomePage extends GetView<HomeController> {
                                               color: Colors.amber,
                                             ),
                                             onRatingUpdate: (rating) {
-                                              print(pageViewIndex);
-                                              pageViewIndex++;
-                                              // carouselController.nextPage();
+                                              carouselController.nextPage();
                                             },
                                           ),
                                         ],
