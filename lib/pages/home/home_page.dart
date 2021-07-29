@@ -26,6 +26,7 @@ import 'home_controller.dart';
 class HomePage extends GetView<HomeController> {
   final HomeController _prodController = Get.put(HomeController());
   CarouselController carouselController = new CarouselController();
+
   String titlexy = 'Accueil';
   List<String> imageList = [];
   var currentPos=0;
@@ -288,7 +289,7 @@ Widget _detailStaggeredGridView(context, controller) {
                       onTap: () {
                         Get.to(()=>
                             Scaffold(
-                              floatingActionButton: buildSpeedDial(),
+                              floatingActionButton: buildSpeedDial(controller,index,context),
                               appBar: AppBar(
                                 backgroundColor: Color(0xFFF70759),
                                 title: const Text('Details'),
@@ -425,7 +426,7 @@ Widget _detailStaggeredGridView(context, controller) {
                                 IconButton(
                                   onPressed: () {
                                     Get.to(()=>Scaffold(
-                                      floatingActionButton: buildSpeedDial(),
+                                      floatingActionButton: buildSpeedDial(controller,index,context),
                                       appBar: AppBar(
                                         backgroundColor: Color(0xFFF70759),
                                         title: const Text('Details'),
@@ -561,8 +562,8 @@ Widget _detailStaggeredGridView(context, controller) {
                                     onPressed: () async =>
                                     {
                                       _saveImage(
-                                          controller.dataProductChip[index]["url"],
-                                          controller.dataProductChip[index]["productId"],
+                                          controller.dataProductChip[index].url,
+                                          controller.dataProductChip[index].productId,
                                           context),
                                     },
                                     icon: Icon(
@@ -600,17 +601,16 @@ _saveImage(url, name, context) async {
         Uint8List.fromList(response.bodyBytes),
         quality: 60,
         name: "model" + name.toString());
-    print(result["filePath"]);
-    Share.shareFiles([
-      result['filePath']
-          .toString()
-          .replaceAll(RegExp('file://'), '')
-    ], text: 'Great picture');
+    ScaffoldMessenger.of(context)
+        .showSnackBar(mysnackBar("Image sauvegardé"));
   } else if (await Permission.storage.request().isPermanentlyDenied) {
     await openAppSettings();
   } else if (await Permission.storage.request().isDenied) {
 
   }
+}
+mysnackBar(message){
+  return SnackBar(content: Text(message));
 }
 _shareImage(url, name, context) async {
   if (await Permission.storage.request().isGranted) {
@@ -631,7 +631,7 @@ _shareImage(url, name, context) async {
   }
 }
 
-SpeedDial buildSpeedDial() {
+SpeedDial buildSpeedDial(controller,index,context) {
   return SpeedDial(
     animatedIcon: AnimatedIcons.menu_close,
     animatedIconTheme: IconThemeData(size: 28.0),
@@ -642,24 +642,28 @@ SpeedDial buildSpeedDial() {
       SpeedDialChild(
         child: Icon(Icons.file_download, color: Colors.white),
         backgroundColor: Colors.blueAccent,
-        onTap: () => print('Pressed Read Later'),
+        onTap: () => {
+          _saveImage(controller.dataProductChip[index].url,controller.dataProductChip[index].name,context)
+        },
         labelStyle: TextStyle(fontWeight: FontWeight.w500, color: Colors.white),
         labelBackgroundColor: Colors.black,
       ),
       SpeedDialChild(
         child: Icon(Icons.favorite, color: Colors.white),
         backgroundColor: Colors.blueAccent,
-        onTap: () => print('Pressed Write'),
+        onTap: () => {
+
+        },
         labelStyle: TextStyle(fontWeight: FontWeight.w500, color: Colors.white),
         labelBackgroundColor: Colors.black,
       ),
-      SpeedDialChild(
+/*      SpeedDialChild(
         child: Icon(Icons.share, color: Colors.white),
         backgroundColor: Colors.blueAccent,
         onTap: () async => {},
         labelStyle: TextStyle(fontWeight: FontWeight.w500, color: Colors.white),
         labelBackgroundColor: Colors.black,
-      ),
+      ),*/
     ],
   );
 }

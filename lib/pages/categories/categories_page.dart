@@ -56,7 +56,7 @@ class CategoriesPage extends GetView<CategoriesController> {
                                   GestureDetector(
                                     onTap:(){
                                       Get.to(()=>Scaffold(
-                                        floatingActionButton: buildSpeedDial(),
+                                        floatingActionButton: buildSpeedDial(controller,index,context),
                                         appBar: AppBar(
                                           backgroundColor: Color(0xFFF70759),
                                           title: const Text('Details'),
