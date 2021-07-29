@@ -47,7 +47,8 @@ dependencies:
   flutter_speed_dial: ^4.1.0
   share: ^2.0.4
   permission_handler: ^5.0.1+1
-  flutter_native_admob: ^2.1.0+3
+  #flutter_native_admob: ^2.1.0+3
+  #firebase_core: ^0.5.2
   #esys_flutter_share: ^1.0.2
   #tiktoklikescroller: ^0.1.6
   font_awesome_flutter: ^8.8.1
