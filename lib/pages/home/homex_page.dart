@@ -59,6 +59,7 @@ class _HomePagexState extends State<HomexPage> {
               onPressed: () async {
                 _bannerAd?.dispose();
                 _bannerAd = null;
+                await RewardedVideoAd.instance.show();
                 Navigator.of(context).push(MaterialPageRoute(
                     builder: (context) => NextPage(
                       coins: _coins,

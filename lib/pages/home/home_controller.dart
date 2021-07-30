@@ -65,28 +65,20 @@ class HomeController extends GetxController with SingleGetTickerProviderMixin {
     bannerAd = createBannerAdd()
       ..load()
       ..show();
-    Future.delayed(Duration.zero,() async {
-      showRewardAd();
-    });
+    await RewardedVideoAd.instance.show();
+    //showRewardAd();
   }
 
 
   showRewardAd() async {
-/*
+
     RewardedVideoAd.instance.load(
         adUnitId: RewardedVideoAd.testAdUnitId, targetingInfo: targetingInfo);
     RewardedVideoAd.instance.listener =
         (RewardedVideoAdEvent event, {String rewardType, int rewardAmount}) {
       print('Rewarded event: $event');
     };
-    await RewardedVideoAd.instance.show();*/
-    RewardedVideoAd.instance.listener =
-        (RewardedVideoAdEvent event, {String rewardType, int rewardAmount}) {
-      if (event == RewardedVideoAdEvent.completed) {
-        print ("::debug:: ads should be reloaded");
-        RewardedVideoAd.instance.load(adUnitId: "ca-app-pub-3940256099942544/5224354917", targetingInfo: targetingInfo);
-      }
-    };
+    await RewardedVideoAd.instance.show();
   }
   void _handleSelected() {
     myHandler.value = _tabs[controller.index];
