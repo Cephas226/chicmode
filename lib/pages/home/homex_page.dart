@@ -1,132 +1,86 @@
-import 'dart:async';
-
-import 'package:firebase_admob/firebase_admob.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_native_admob/flutter_native_admob.dart';
-import 'package:flutter_native_admob/native_admob_controller.dart';
-import 'next_page.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 
-class HomexPage extends StatefulWidget {
+class MyHomexPage extends StatefulWidget {
+  MyHomexPage({Key key, this.title}) : super(key: key);
+  final String title;
   @override
-  _HomePagexState createState() => _HomePagexState();
+  _MyHomexPageState createState() => _MyHomexPageState();
 }
 
-class _HomePagexState extends State<HomexPage> {
-  BannerAd _bannerAd;
-  InterstitialAd _interstitialAd;
-  static const MobileAdTargetingInfo targetingInfo = MobileAdTargetingInfo();
-  int _coins = 0;
-  final _nativeAdController = NativeAdmobController();
-  InterstitialAd createInterstitialAd() {
-    return InterstitialAd(
-        targetingInfo: targetingInfo,
-        adUnitId: InterstitialAd.testAdUnitId,
-        listener: (MobileAdEvent event) {
-          print('interstitial event: $event');
+class _MyHomexPageState extends State<MyHomexPage> {
+  final FirebaseMessaging _firebaseMessaging = FirebaseMessaging();
+  final List<Notification> notifications = [];
+  @override
+  void initState() {
+    super.initState();
+    _firebaseMessaging.configure(
+      onMessage: (Map<String, dynamic> notification) async {
+        setState(() {
+          notifications.add(
+            Notification(
+              title: notification["notification"]["title"],
+              body: notification["notification"]["body"],
+              color: Colors.red,
+            ),
+          );
         });
-  }
-
-  BannerAd createBannerAdd() {
-    return BannerAd(
-        targetingInfo: targetingInfo,
-        adUnitId: BannerAd.testAdUnitId,
-        size: AdSize.smartBanner,
-        listener: (MobileAdEvent event) {
-          print('Bnner Event: $event');
+      },
+      onLaunch: (Map<String, dynamic> notification) async {
+        setState(() {
+          notifications.add(
+            Notification(
+              title: notification["notification"]["title"],
+              body: notification["notification"]["body"],
+              color: Colors.green,
+            ),
+          );
         });
+      },
+      onResume: (Map<String, dynamic> notification) async {
+        setState(() {
+          notifications.add(
+            Notification(
+              title: notification["notification"]["title"],
+              body: notification["notification"]["body"],
+              color: Colors.blue,
+            ),
+          );
+        });
+      },
+    );
+    _firebaseMessaging.requestNotificationPermissions();
   }
 
   @override
   Widget build(BuildContext context) {
-    Timer(Duration(seconds: 10), () {
-      _bannerAd?.show();
-    });
     return Scaffold(
       appBar: AppBar(
-        title: Text('Home'),
-        actions: [
-          IconButton(
-              icon: Icon(Icons.add),
-              onPressed: () {
-                _bannerAd?.dispose();
-                _bannerAd = null;
-                _interstitialAd?.show();
-                Navigator.of(context)
-                    .push(MaterialPageRoute(builder: (context) => NextPage()));
-              }),
-          IconButton(
-              icon: Icon(Icons.video_call),
-              onPressed: () async {
-                _bannerAd?.dispose();
-                _bannerAd = null;
-                await RewardedVideoAd.instance.show();
-                Navigator.of(context).push(MaterialPageRoute(
-                    builder: (context) => NextPage(
-                      coins: _coins,
-                    )));
-              }),
-        ],
+        title: Text(widget.title),
       ),
-      body: ListView.separated(
-        itemBuilder: (context, index) {
-          return
-            Container(
-              margin: EdgeInsets.all(8),
-              color: Colors.blue,
-              height: 200,
-              child: Center(
-                child: Text(
-                  '$index',
-                  style: TextStyle(
-                    fontSize: 28,
-                    color: Colors.white,
-                  ),
-                ),
-              ));
-        },
-        separatorBuilder: (context, index) {
-          return index % 4 == 0
-              ? Container(
-              margin: EdgeInsets.all(8),
-              height: 200,
-              color: Colors.green,
-              child: NativeAdmob(
-                adUnitID: NativeAd.testAdUnitId,
-                controller: _nativeAdController,
-                type: NativeAdmobType.full,
-                loading: Center(child: CircularProgressIndicator()),
-                error: Text('failed to load'),
-              ))
-              : Container();
-        },
-        itemCount: 20,
+      body: ListView(
+        children: notifications.map(buildNotification).toList(),
       ),
     );
   }
 
-  @override
-  void initState() {
-    super.initState();
-    FirebaseAdMob.instance.initialize(appId: 'ca-app-pub-8772568690813006~5906019215');
-    _bannerAd = createBannerAdd()..load();
-    _interstitialAd = createInterstitialAd()..load();
-    RewardedVideoAd.instance.load(
-        adUnitId: RewardedVideoAd.testAdUnitId, targetingInfo: targetingInfo);
-    RewardedVideoAd.instance.listener =
-        (RewardedVideoAdEvent event, {String rewardType, int rewardAmount}) {
-      print('Rewarded event: $event');
-      if (event == RewardedVideoAdEvent.rewarded) {
-        setState(() {
-          _coins += rewardAmount;
-        });
-      }
-    };
+  Widget buildNotification(Notification notification) {
+    return ListTile(
+      title: Text(
+        notification.title,
+        style: TextStyle(
+          color: notification.color,
+        ),
+      ),
+      subtitle: Text(notification.body),
+    );
   }
+}
 
-  @override
-  void dispose() {
-    _bannerAd?.dispose();
-    _interstitialAd?.dispose();
-    super.dispose();
-  }
+class Notification {
+  final String title;
+  final String body;
+  final Color color;
+  const Notification(
+      {@required this.title, @required this.body, @required this.color});
 }

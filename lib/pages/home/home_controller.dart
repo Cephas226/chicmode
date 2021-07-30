@@ -70,10 +70,7 @@ class HomeController extends GetxController with SingleGetTickerProviderMixin {
       ..load()
       ..show();
     await RewardedVideoAd.instance.show();*/
-    final fbm = FirebaseMessaging();
-    fbm.requestNotificationPermissions();
-    fbm.configure(onMessage: (msg) {      print(msg);      return;    }, onLaunch: (msg) {      print(msg);      return;    }, onResume: (msg) {      print(msg);      return;    });
-  }
+    }
   void _handleSelected() {
     myHandler.value = _tabs[controller.index];
   }

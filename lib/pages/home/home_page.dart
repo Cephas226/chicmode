@@ -5,7 +5,6 @@ import 'package:firebase_admob/firebase_admob.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_native_admob/flutter_native_admob.dart';
 import 'package:flutter_native_admob/native_admob_controller.dart';
-import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:get/get.dart';
 import 'package:getx_app/model/product_model.dart';
@@ -24,7 +23,6 @@ import 'package:transparent_image/transparent_image.dart';
 import 'package:favorite_button/favorite_button.dart';
 import '../../main.dart';
 import 'home_controller.dart';
-import 'next_page.dart';
 
 class HomePage extends GetView<HomeController> {
   final HomeController _prodController = Get.put(HomeController());
@@ -88,7 +86,7 @@ class HomePage extends GetView<HomeController> {
                       Obx(() => Expanded(
                             child: Container(
                               child:_prodController.dataProductChip.isNotEmpty ?
-                              _detailStaggeredGridView(context, _prodController):Text("Chargement en Cours"),
+                              _detailStaggeredGridView(context, _prodController):Text("Chargement en Cours ..."),
                             ),
                           )),
                     ],
