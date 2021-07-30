@@ -66,8 +66,14 @@ class RatePage extends GetView<RateController> {
                           left: 80,
                           top: 400,
                           child: Container(
-                            child: Row(
+                            child: Column(
                               children: [
+                                Text("Glissez pour noter", style: TextStyle(
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.black,
+                                  fontFamily: 'Raleway',
+                                )),
                                 RatingBar.builder(
                                   initialRating: 3,
                                   minRating: 1,

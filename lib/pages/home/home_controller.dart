@@ -61,24 +61,33 @@ class HomeController extends GetxController with SingleGetTickerProviderMixin {
     controller = new TabController(vsync: this, length: 3);
     myHandler = _tabs[0].obs;
     controller.addListener(_handleSelected);
+    FirebaseAdMob.instance.initialize(appId: BannerAd.testAdUnitId);
+    bannerAd = createBannerAdd()
+      ..load()
+      ..show();
+    Future.delayed(Duration.zero,() async {
+      showRewardAd();
+    });
+  }
 
 
-    FirebaseAdMob.instance.initialize(appId: 'ca-app-pub-8772568690813006~5906019215');
-    bannerAd = createBannerAdd()..load();
-    interstitialAd = createInterstitialAd()..load();
+  showRewardAd() async {
+/*
     RewardedVideoAd.instance.load(
         adUnitId: RewardedVideoAd.testAdUnitId, targetingInfo: targetingInfo);
     RewardedVideoAd.instance.listener =
         (RewardedVideoAdEvent event, {String rewardType, int rewardAmount}) {
       print('Rewarded event: $event');
-      if (event == RewardedVideoAdEvent.rewarded) {
-
-          coins += rewardAmount;
-
+    };
+    await RewardedVideoAd.instance.show();*/
+    RewardedVideoAd.instance.listener =
+        (RewardedVideoAdEvent event, {String rewardType, int rewardAmount}) {
+      if (event == RewardedVideoAdEvent.completed) {
+        print ("::debug:: ads should be reloaded");
+        RewardedVideoAd.instance.load(adUnitId: "ca-app-pub-3940256099942544/5224354917", targetingInfo: targetingInfo);
       }
     };
   }
-
   void _handleSelected() {
     myHandler.value = _tabs[controller.index];
   }

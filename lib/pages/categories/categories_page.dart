@@ -41,14 +41,10 @@ class CategoriesPage extends GetView<CategoriesController> {
                       leading: new IconButton(
                           icon: new Icon(Icons.arrow_back),
                           onPressed: () async {
-                            _prodController.bannerAd?.dispose();
-                            _prodController.bannerAd = null;
-                            await RewardedVideoAd.instance.show();
-                            if (_prodController.bannerAd == null){
-                              Navigator.of(context).push(MaterialPageRoute(
-                                  builder: (context) => DashboardPage()));
-                            }
-
+                            print("cooly");
+                            _prodController.createInterstitialAd()
+                              ..load()
+                              ..show().then((value) => Get.to(()=>DashboardPage()));
                           }
                       ),
                         /*;*/
@@ -224,7 +220,7 @@ class CategoriesPage extends GetView<CategoriesController> {
                             )
                                 : Center (
                               child: Text(
-                                  "Aucune image"
+                                  "Chargement en cours ..."
                               ),
                             );
                           }),

@@ -31,11 +31,9 @@ class HomePage extends GetView<HomeController> {
   CarouselController carouselController = new CarouselController();
   String titlexy = 'Accueil';
   List<String> imageList = [];
-  final _nativeAdController = NativeAdmobController();
   var currentPos=0;
   @override
   Widget build(BuildContext context) {
-    CarouselController carouselController = new CarouselController();
     _prodController.monContext=context;
     final List<String> _chipLabel = [
       'Tout',
@@ -78,7 +76,7 @@ class HomePage extends GetView<HomeController> {
                               child: ChoiceChip(
                                 label: Text(_chipLabel[index]),
                                 selected: _prodController.selectedChip == index,
-                                onSelected: (bool selected) {
+                                onSelected: (bool selected) async {
                                   _prodController.selectedChip =
                                   selected ? index : null;
                                   _prodController.getChipProduct(productChip
@@ -197,6 +195,7 @@ Widget _buildRow(IconData icon, String title,route,context) {
   );
 }
 Widget _detailStaggeredGridView(context, controller) {
+  final _nativeAdController = NativeAdmobController();
   return
     Scaffold(
     body:
@@ -331,7 +330,23 @@ Widget _detailStaggeredGridView(context, controller) {
                                       ],
                                     ),
                                   ))),
-
+                                        Positioned.fill(
+                                          child: Align(
+                                              alignment: Alignment.bottomCenter,
+                                              child:
+                                              Container(
+                                                  margin: EdgeInsets.all(8),
+                                                  height: 90,
+                                                  color: Colors.white24,
+                                                  child: NativeAdmob(
+                                                    adUnitID: NativeAd.testAdUnitId,
+                                                    controller: _nativeAdController,
+                                                    type: NativeAdmobType.full,
+                                                    loading: Center(child: CircularProgressIndicator()),
+                                                    error: Text('failed to load'),
+                                                  ))
+                                          ),
+                                        ),
                                       ],
                                     ),
                               ),
