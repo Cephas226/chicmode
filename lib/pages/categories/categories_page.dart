@@ -2,10 +2,15 @@ import 'dart:typed_data';
 
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:favorite_button/favorite_button.dart';
+import 'package:firebase_admob/firebase_admob.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_native_admob/flutter_native_admob.dart';
+import 'package:flutter_native_admob/native_admob_controller.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import 'package:get/get.dart';
 import 'package:getx_app/pages/categories/categories_controller.dart';
+import 'package:getx_app/pages/dashboard/dashboard_page.dart';
+import 'package:getx_app/pages/home/home_controller.dart';
 import 'package:getx_app/pages/home/home_page.dart';
 import 'package:getx_app/services/backend_service.dart';
 import 'package:getx_app/widget/photo_widget/photohero.dart';
@@ -21,7 +26,8 @@ class CategoriesPage extends GetView<CategoriesController> {
   List couple;
   List enfant;
   final CategoriesController _catController = Get.put(CategoriesController());
-
+  final HomeController _prodController = Get.put(HomeController());
+  final _nativeAdController = NativeAdmobController();
   Widget _gestureDetector(BuildContext context,String param1,String param2,String assetUrl){
     return  GestureDetector(
       onTap: (){
@@ -32,6 +38,20 @@ class CategoriesPage extends GetView<CategoriesController> {
                     appBar: AppBar(
                       title: const Text('Photo'),
                       backgroundColor: Color(0xFFF70759),
+                      leading: new IconButton(
+                          icon: new Icon(Icons.arrow_back),
+                          onPressed: () async {
+                            _prodController.bannerAd?.dispose();
+                            _prodController.bannerAd = null;
+                            await RewardedVideoAd.instance.show();
+                            if (_prodController.bannerAd == null){
+                              Navigator.of(context).push(MaterialPageRoute(
+                                  builder: (context) => DashboardPage()));
+                            }
+
+                          }
+                      ),
+                        /*;*/
                     ),
                     body:Center(
                       child:
@@ -56,7 +76,7 @@ class CategoriesPage extends GetView<CategoriesController> {
                                   GestureDetector(
                                     onTap:(){
                                       Get.to(()=>Scaffold(
-                                        floatingActionButton: buildSpeedDial(controller,index,context),
+                                        //floatingActionButton: buildSpeedDial(controller,index,context),
                                         appBar: AppBar(
                                           backgroundColor: Color(0xFFF70759),
                                           title: const Text('Details'),
@@ -164,6 +184,23 @@ class CategoriesPage extends GetView<CategoriesController> {
                                                               ],
                                                             ),
                                                           ))),
+                                                  Positioned.fill(
+                                                    child: Align(
+                                                        alignment: Alignment.bottomCenter,
+                                                        child:
+                                                        Container(
+                                                            margin: EdgeInsets.all(8),
+                                                            height: 90,
+                                                            color: Colors.white24,
+                                                            child: NativeAdmob(
+                                                              adUnitID: NativeAd.testAdUnitId,
+                                                              controller: _nativeAdController,
+                                                              type: NativeAdmobType.full,
+                                                              loading: Center(child: CircularProgressIndicator()),
+                                                              error: Text('failed to load'),
+                                                            ))
+                                                    ),
+                                                  ),
                                                 ],
                                               ),
                                         ),

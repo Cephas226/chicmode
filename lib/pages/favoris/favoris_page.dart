@@ -1,5 +1,8 @@
 import 'package:favorite_button/favorite_button.dart';
+import 'package:firebase_admob/firebase_admob.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_native_admob/flutter_native_admob.dart';
+import 'package:flutter_native_admob/native_admob_controller.dart';
 import 'package:get/get.dart';
 import 'package:getx_app/model/product_model.dart';
 import 'package:getx_app/pages/favoris/favoris_controller.dart';
@@ -8,7 +11,7 @@ import 'dart:math' as math;
 
 final FavorisController _favController = Get.put(FavorisController());
 final snackBar = SnackBar(content: Text('Image retirée avec succès'));
-
+final _nativeAdController = NativeAdmobController();
 class FavorisPage extends GetView<FavorisController> {
   @override
   Widget build(BuildContext context) {
@@ -175,7 +178,24 @@ Widget _builListView() {
                                           ],
                                         ),
                                       ),
-                                    ))
+                                    )),
+                                Positioned.fill(
+                                  child: Align(
+                                      alignment: Alignment.bottomCenter,
+                                      child:
+                                      Container(
+                                          margin: EdgeInsets.all(8),
+                                          height: 90,
+                                          color: Colors.white24,
+                                          child: NativeAdmob(
+                                            adUnitID: NativeAd.testAdUnitId,
+                                            controller: _nativeAdController,
+                                            type: NativeAdmobType.full,
+                                            loading: Center(child: CircularProgressIndicator()),
+                                            error: Text('failed to load'),
+                                          ))
+                                  ),
+                                ),
                               ],
                             ),
                           );

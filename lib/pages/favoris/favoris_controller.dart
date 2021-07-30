@@ -18,6 +18,10 @@ class FavorisController extends GetxController {
     productBox = Hive.box<Product>(productBoxName);
     valueListenable=Hive.box<Product>(productBoxName).listenable();
   }
+  @override
+  void dispose() {
+    super.dispose();
+  }
   Future<List<Product>> getFavProduct() async {
     if (productBox!=null){
       for (int i = 0; i < productBox.length; i++) {

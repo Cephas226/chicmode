@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:video_player/video_player.dart';
 
 final white1 = Colors.white;
 final white2 = Color(0xffeeeeee);
@@ -25,3 +26,5 @@ final secondaryBGrey = Color(0xff393e46);
 final primaryBGrey = Color(0xff222831);
 
 final authHintText = Color(0xff8E8E8E);
+
+VideoPlayerController _controller;

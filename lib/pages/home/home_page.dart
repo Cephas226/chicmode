@@ -1,17 +1,19 @@
+import 'dart:async';
 import 'dart:typed_data';
 import 'package:carousel_slider/carousel_slider.dart';
+import 'package:firebase_admob/firebase_admob.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_rating_bar/flutter_rating_bar.dart';
+import 'package:flutter_native_admob/flutter_native_admob.dart';
+import 'package:flutter_native_admob/native_admob_controller.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:get/get.dart';
 import 'package:getx_app/model/product_model.dart';
 import 'package:getx_app/pages/categories/categories_page.dart';
-import 'package:getx_app/pages/dashboard/dashboard_page.dart';
 import 'package:getx_app/pages/favoris/favoris_page.dart';
+import 'package:getx_app/pages/rate/rate_page.dart';
 import 'package:getx_app/pages/videos/took.dart';
 import 'dart:math' as math;
-import 'package:getx_app/services/backend_service.dart';
 import 'package:getx_app/widget/oval-right-clipper.dart';
 import 'package:getx_app/widget/photo_widget/photohero.dart';
 import 'package:image_gallery_saver/image_gallery_saver.dart';
@@ -22,17 +24,19 @@ import 'package:transparent_image/transparent_image.dart';
 import 'package:favorite_button/favorite_button.dart';
 import '../../main.dart';
 import 'home_controller.dart';
+import 'next_page.dart';
 
 class HomePage extends GetView<HomeController> {
   final HomeController _prodController = Get.put(HomeController());
   CarouselController carouselController = new CarouselController();
-
   String titlexy = 'Accueil';
   List<String> imageList = [];
+  final _nativeAdController = NativeAdmobController();
   var currentPos=0;
   @override
   Widget build(BuildContext context) {
     CarouselController carouselController = new CarouselController();
+    _prodController.monContext=context;
     final List<String> _chipLabel = [
       'Tout',
       'Récent',
@@ -43,6 +47,7 @@ class HomePage extends GetView<HomeController> {
       length: 3,
       child: Scaffold(
           appBar: AppBar(
+            //key: _prodController.key1,
             title: Obx(()=>Text(_prodController.myHandler.value.title)),
             bottom: TabBar(
               indicatorColor: Colors.black,
@@ -67,103 +72,32 @@ class HomePage extends GetView<HomeController> {
                       Obx(() => Wrap(
                           spacing: 20,
                           children: List<Widget>.generate(4, (int index) {
-                            return ChoiceChip(
-                              label: Text(_chipLabel[index]),
-                              selected: _prodController.selectedChip == index,
-                              onSelected: (bool selected) {
-                                _prodController.selectedChip =
-                                    selected ? index : null;
-                                _prodController.getChipProduct(productChip
-                                    .values[_prodController.selectedChip]);
+                            return InkWell(
+                              onTap: ()=>{
                               },
+                              child: ChoiceChip(
+                                label: Text(_chipLabel[index]),
+                                selected: _prodController.selectedChip == index,
+                                onSelected: (bool selected) {
+                                  _prodController.selectedChip =
+                                  selected ? index : null;
+                                  _prodController.getChipProduct(productChip
+                                      .values[_prodController.selectedChip]);
+                                },
+                              ),
                             );
                           }))),
                       Obx(() => Expanded(
                             child: Container(
-                              margin: EdgeInsets.all(12),
-                              child: _detailStaggeredGridView(context, _prodController),
+                              child:_prodController.dataProductChip.isNotEmpty ?
+                              _detailStaggeredGridView(context, _prodController):Text("Chargement en Cours"),
                             ),
                           )),
                     ],
                   ),
                 ),
               ),
-              Center(
-                child: FutureBuilder(
-                    future: Dataservices.fetchProductx(),
-                    builder: (context, AsyncSnapshot<List<dynamic>> snapshot) {
-                      final data = snapshot.data;
-                      return snapshot.hasData
-                          ? CarouselSlider.builder(
-                              itemCount: snapshot.data.length,
-                              carouselController: carouselController,
-                              options: CarouselOptions(
-                                height: 800,
-                                scrollDirection: Axis.vertical,
-                                initialPage: 0,
-                                viewportFraction: 1,
-                                aspectRatio: 16 / 9,
-                                enableInfiniteScroll: false,
-                                autoPlay: false),
-                              itemBuilder: (BuildContext context, int itemIndex,
-                                      int pageViewIndex) =>
-                                  Stack(
-                                children: <Widget>[
-                                  Card(
-                                    shape: RoundedRectangleBorder(
-                                        borderRadius:
-                                            BorderRadiusDirectional.circular(
-                                                20)),
-                                    clipBehavior: Clip.antiAlias,
-                                    child: Container(
-                                      padding: const EdgeInsets.all(0.0),
-                                      height: double.infinity,
-                                      color: Color(0xFFF70759),
-                                      child: PhotoHero(
-                                        photo: data.reversed.toList()[itemIndex]["url"],
-                                        width: double.infinity,
-                                        height: double.infinity,
-                                        onTap: () {
-                                        },
-                                      ),
-                                    ),
-                                  ),
-                                  Positioned(
-                                    left: 80,
-                                    top: 500,
-                                    child: Container(
-                                      child: Row(
-                                        children: [
-                                          RatingBar.builder(
-                                            initialRating: 3,
-                                            minRating: 1,
-                                            direction: Axis.horizontal,
-                                            allowHalfRating: true,
-                                            itemCount: 5,
-                                            itemPadding: EdgeInsets.symmetric(
-                                                horizontal: 4.0),
-                                            itemBuilder: (context, _) => Icon(
-                                              Icons.star,
-                                              color: Colors.amber,
-                                            ),
-                                            onRatingUpdate: (rating) {
-                                              carouselController.nextPage();
-                                            },
-                                          ),
-                                        ],
-                                      ),
-                                      decoration: new BoxDecoration(
-                                          color: Colors.white24,
-                                          borderRadius: BorderRadius.all(
-                                              Radius.circular(12))),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            )
-                          : const CircularProgressIndicator();
-                    }),
-              ),
+              RatePage(),
               Center(
                 child: TokPage(),
               ),
@@ -233,13 +167,11 @@ _buildDrawer(context) {
     ),
   );
 }
-
 Divider _buildDivider() {
   return Divider(
     color: active,
   );
 }
-
 Widget _buildRow(IconData icon, String title,route,context) {
   final TextStyle tStyle = TextStyle(color: active, fontSize: 16.0);
   return Container(
@@ -265,7 +197,8 @@ Widget _buildRow(IconData icon, String title,route,context) {
   );
 }
 Widget _detailStaggeredGridView(context, controller) {
-  return Scaffold(
+  return
+    Scaffold(
     body:
     StaggeredGridView.countBuilder(
       crossAxisCount: 4,
@@ -289,11 +222,12 @@ Widget _detailStaggeredGridView(context, controller) {
                       onTap: () {
                         Get.to(()=>
                             Scaffold(
-                              floatingActionButton: buildSpeedDial(controller,index,context),
+                              //floatingActionButton: buildSpeedDial(controller,index,context),
                               appBar: AppBar(
                                 backgroundColor: Color(0xFFF70759),
                                 title: const Text('Details'),
                               ),
+
                               body: CarouselSlider.builder(
                                 itemCount: controller.dataProductChip.length,
                                 options: CarouselOptions(
@@ -397,6 +331,7 @@ Widget _detailStaggeredGridView(context, controller) {
                                       ],
                                     ),
                                   ))),
+
                                       ],
                                     ),
                               ),
@@ -426,7 +361,7 @@ Widget _detailStaggeredGridView(context, controller) {
                                 IconButton(
                                   onPressed: () {
                                     Get.to(()=>Scaffold(
-                                      floatingActionButton: buildSpeedDial(controller,index,context),
+                                     // floatingActionButton: buildSpeedDial(controller,index,context),
                                       appBar: AppBar(
                                         backgroundColor: Color(0xFFF70759),
                                         title: const Text('Details'),
@@ -592,7 +527,6 @@ Widget _detailStaggeredGridView(context, controller) {
     ),
   );
 }
-
 _saveImage(url, name, context) async {
   if (await Permission.storage.request().isGranted) {
     var client = http.Client();
@@ -625,13 +559,12 @@ _shareImage(url, name, context) async {
       result['filePath']
           .toString()
           .replaceAll(RegExp('file://'), '')
-    ], text: 'Great picture');
+    ], text: 'Pour plus de modèles de pagnes, télécharges l\'application ChicMode via ce lien 👉🏼');
   } else if (await Permission.storage.request().isPermanentlyDenied) {
     await openAppSettings();
   }
 }
-
-SpeedDial buildSpeedDial(controller,index,context) {
+/*SpeedDial buildSpeedDial(controller,index,context) {
   return SpeedDial(
     animatedIcon: AnimatedIcons.menu_close,
     animatedIconTheme: IconThemeData(size: 28.0),
@@ -643,7 +576,7 @@ SpeedDial buildSpeedDial(controller,index,context) {
         child: Icon(Icons.file_download, color: Colors.white),
         backgroundColor: Colors.blueAccent,
         onTap: () => {
-          _saveImage(controller.dataProductChip[index].url,controller.dataProductChip[index].name,context)
+          _saveImage(controller.dataProductChip[index].url,controller.dataProductChip[index]["name"],context)
         },
         labelStyle: TextStyle(fontWeight: FontWeight.w500, color: Colors.white),
         labelBackgroundColor: Colors.black,
@@ -657,13 +590,13 @@ SpeedDial buildSpeedDial(controller,index,context) {
         labelStyle: TextStyle(fontWeight: FontWeight.w500, color: Colors.white),
         labelBackgroundColor: Colors.black,
       ),
-/*      SpeedDialChild(
+*//*      SpeedDialChild(
         child: Icon(Icons.share, color: Colors.white),
         backgroundColor: Colors.blueAccent,
         onTap: () async => {},
         labelStyle: TextStyle(fontWeight: FontWeight.w500, color: Colors.white),
         labelBackgroundColor: Colors.black,
-      ),*/
+      ),*//*
     ],
   );
-}
+}*/

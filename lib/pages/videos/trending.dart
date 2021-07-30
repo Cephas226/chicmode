@@ -1,6 +1,9 @@
 import 'dart:convert';
 
+
 import 'package:flutter/material.dart';
+
+import 'package:flutter_native_admob/native_admob_controller.dart';
 import 'package:getwidget/components/loader/gf_loader.dart';
 import 'package:getwidget/types/gf_loader_type.dart';
 import 'package:getx_app/domain/request.dart';
@@ -14,6 +17,7 @@ class Trending extends StatefulWidget {
 class _TrendingState extends State<Trending> {
   PageController pageController;
   RequestController api = RequestController();
+  final _nativeAdController = NativeAdmobController();
   List<Widget> tikTokVideos = [];
 
   getTrending() async {
@@ -53,7 +57,7 @@ class _TrendingState extends State<Trending> {
               loaderColorThree: Colors.pink,
             ),
           ),
-        )
+        ),
       ]
           : tikTokVideos.reversed.toList()..shuffle(),
     );

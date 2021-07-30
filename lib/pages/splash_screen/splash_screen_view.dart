@@ -22,17 +22,31 @@ class SplashScreenView extends GetView<SplashScreenController> {
                     alignment: Alignment.center,
                   ),
                   Positioned(
-                      bottom: 90.0,
+                      bottom: 350.0,
                       right: 20.0,
                       left: 0.0,
                       child: Container(
                         width: 200,
                         decoration: new BoxDecoration(
-                            color: Colors.black12),
+                            color: Colors.black26),
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                               Text("Chic Mode", style: TextStyle(color: Colors.white,fontSize: 20,fontWeight: FontWeight.w800))
+                            Text("Chic mode", style: TextStyle(color: Colors.white,fontSize: 20,fontWeight: FontWeight.w800)),
+                          ],
+                        ),
+                      )),
+                  Positioned(
+                      bottom: 90.0,
+                      right: 20.0,
+                      left: 0.0,
+                      child: Container(
+                        width: 200,
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                               Text("Chargement en cours", style: TextStyle(color: Colors.white,fontSize: 20,fontWeight: FontWeight.w800)),
+                                CircularProgressIndicator()
                           ],
                         ),
                       )),
