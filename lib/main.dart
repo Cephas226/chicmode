@@ -17,15 +17,11 @@ final Color active = Colors.black;
 final Color primary =Colors.white;
 const String productBoxName = "product";
 void main() async{
-  //await Hive.initFlutter('example_hive_folder');
- //
   WidgetsFlutterBinding.ensureInitialized();
   final document = await getApplicationDocumentsDirectory();
   Hive.init(document.path);
   Hive.registerAdapter(ProductAdapter());
   await Hive.openBox<Product>(productBoxName);
-  //await Hive.openBox<Product>(prodBoxName);
-  //firebaseCloudMessaging_Listeners();
   runApp(MyApp());
 }
 

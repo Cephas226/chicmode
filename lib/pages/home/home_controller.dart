@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:firebase_admob/firebase_admob.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_native_admob/native_admob_controller.dart';
 import 'package:get/get.dart';
@@ -32,6 +33,9 @@ class HomeController extends GetxController with SingleGetTickerProviderMixin {
   InterstitialAd interstitialAd;
   static const MobileAdTargetingInfo targetingInfo = MobileAdTargetingInfo();
   final _nativeAdController = NativeAdmobController();
+  FirebaseMessaging _firebaseMessaging = FirebaseMessaging();
+  RxString messageTitle = "Empty".obs;
+  RxString notificationAlert = "alert".obs;
   InterstitialAd createInterstitialAd() {
     return InterstitialAd(
         targetingInfo: targetingInfo,
@@ -62,23 +66,13 @@ class HomeController extends GetxController with SingleGetTickerProviderMixin {
     myHandler = _tabs[0].obs;
     controller.addListener(_handleSelected);
     FirebaseAdMob.instance.initialize(appId: BannerAd.testAdUnitId);
-    bannerAd = createBannerAdd()
+    /*bannerAd = createBannerAdd()
       ..load()
       ..show();
-    await RewardedVideoAd.instance.show();
-    //showRewardAd();
-  }
-
-
-  showRewardAd() async {
-
-    RewardedVideoAd.instance.load(
-        adUnitId: RewardedVideoAd.testAdUnitId, targetingInfo: targetingInfo);
-    RewardedVideoAd.instance.listener =
-        (RewardedVideoAdEvent event, {String rewardType, int rewardAmount}) {
-      print('Rewarded event: $event');
-    };
-    await RewardedVideoAd.instance.show();
+    await RewardedVideoAd.instance.show();*/
+    final fbm = FirebaseMessaging();
+    fbm.requestNotificationPermissions();
+    fbm.configure(onMessage: (msg) {      print(msg);      return;    }, onLaunch: (msg) {      print(msg);      return;    }, onResume: (msg) {      print(msg);      return;    });
   }
   void _handleSelected() {
     myHandler.value = _tabs[controller.index];
