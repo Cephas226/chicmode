@@ -13,6 +13,7 @@ import 'package:getx_app/pages/dashboard/dashboard_page.dart';
 import 'package:getx_app/pages/home/home_controller.dart';
 import 'package:getx_app/pages/home/home_page.dart';
 import 'package:getx_app/services/backend_service.dart';
+import 'package:getx_app/themes/color_theme.dart';
 import 'package:getx_app/widget/photo_widget/photohero.dart';
 import 'package:image_gallery_saver/image_gallery_saver.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -189,7 +190,7 @@ class CategoriesPage extends GetView<CategoriesController> {
                                                             height: 90,
                                                             color: Colors.white24,
                                                             child: NativeAdmob(
-                                                              adUnitID: NativeAd.testAdUnitId,
+                                                              adUnitID: banniereUnitID,
                                                               controller: _nativeAdController,
                                                               type: NativeAdmobType.full,
                                                               loading: Center(child: CircularProgressIndicator()),

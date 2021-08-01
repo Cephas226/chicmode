@@ -6,6 +6,7 @@ import 'package:flutter_native_admob/native_admob_controller.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:get/get.dart';
 import 'package:getx_app/services/backend_service.dart';
+import 'package:getx_app/themes/color_theme.dart';
 import 'package:getx_app/widget/photo_widget/photohero.dart';
 import 'rate_controller.dart';
 
@@ -107,7 +108,7 @@ class RatePage extends GetView<RateController> {
                                   height: 90,
                                   color: Colors.white24,
                                   child: NativeAdmob(
-                                    adUnitID: NativeAd.testAdUnitId,
+                                    adUnitID: banniereUnitID,
                                     controller: _nativeAdController,
                                     type: NativeAdmobType.full,
                                     loading: Center(child: CircularProgressIndicator()),

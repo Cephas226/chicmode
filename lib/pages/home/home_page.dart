@@ -12,6 +12,8 @@ import 'package:getx_app/pages/categories/categories_page.dart';
 import 'package:getx_app/pages/favoris/favoris_page.dart';
 import 'package:getx_app/pages/rate/rate_page.dart';
 import 'package:getx_app/pages/videos/took.dart';
+import 'package:getx_app/themes/color_theme.dart';
+import 'package:getx_app/themes/text_theme.dart';
 import 'dart:math' as math;
 import 'package:getx_app/widget/oval-right-clipper.dart';
 import 'package:getx_app/widget/photo_widget/photohero.dart';
@@ -44,6 +46,36 @@ class HomePage extends GetView<HomeController> {
       child: Scaffold(
           appBar: AppBar(
             //key: _prodController.key1,
+            // actions: [
+            //   Container(
+            //     width: Get.width * 0.435,
+            //     child: Row(
+            //       children: [
+            //         Text(
+            //           'Langue',
+            //           style: kSub2HeadTextStyle.copyWith(
+            //             color: Theme.of(context).primaryColorDark,
+            //             fontSize: 16,
+            //           ),
+            //         ),
+            //         GetBuilder<HomeController>(
+            //           id: 'isRepeat',
+            //           init: HomeController(),
+            //           initState: (_) {},
+            //           builder: (_) {
+            //             return Switch(
+            //               value: true,
+            //               onChanged: controller.toggleRepeat,
+            //               activeTrackColor:
+            //               Theme.of(context).primaryColor.withOpacity(0.5),
+            //               activeColor: Theme.of(context).primaryColor,
+            //             );
+            //           },
+            //         ),
+            //       ],
+            //     ),
+            //   )
+            // ],
             title: Obx(()=>Text(_prodController.myHandler.value.title)),
             bottom: TabBar(
               indicatorColor: Colors.black,
@@ -51,7 +83,7 @@ class HomePage extends GetView<HomeController> {
               tabs: <Tab>[
                 Tab(icon: Icon(Icons.photo_camera)),
                 Tab(icon: Icon(Icons.stars)),
-                Tab(icon: Icon(Icons.video_library_sharp)),
+                Tab(icon: IconButton( icon: Icon(Icons.ondemand_video),onPressed:()=>{Get.to(()=>TokPage())})),
               ],
             ),
             elevation: 0,
@@ -60,6 +92,7 @@ class HomePage extends GetView<HomeController> {
           drawer: _buildDrawer(context),
           body: TabBarView(
             controller: _prodController.controller,
+            physics: NeverScrollableScrollPhysics(),
             children: [
               SafeArea(
                 child: Container(
@@ -94,9 +127,7 @@ class HomePage extends GetView<HomeController> {
                 ),
               ),
               RatePage(),
-              Center(
-                child: TokPage(),
-              ),
+              Center(),
             ],
           )),
     );
@@ -337,7 +368,7 @@ Widget _detailStaggeredGridView(context, controller) {
                                                   height: 90,
                                                   color: Colors.white24,
                                                   child: NativeAdmob(
-                                                    adUnitID: NativeAd.testAdUnitId,
+                                                    adUnitID: banniereUnitID,
                                                     controller: _nativeAdController,
                                                     type: NativeAdmobType.full,
                                                     loading: Center(child: CircularProgressIndicator()),

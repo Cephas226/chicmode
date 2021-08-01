@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_native_admob/native_admob_controller.dart';
 import 'package:get/get.dart';
 import 'package:getx_app/model/product_model.dart';
+import 'package:getx_app/themes/color_theme.dart';
 import 'package:getx_app/widget/videoPlayer.dart';
 import 'package:hive/hive.dart';
 import 'package:getx_app/domain/request.dart';
@@ -21,6 +22,7 @@ class HomeController extends GetxController with SingleGetTickerProviderMixin {
   int coins = 0;
   Box<Product> productBox;
   TabController controller;
+  bool isFrench = false;
   final List<MyTabs> _tabs = [
     new MyTabs(title: "Accueil"),
     new MyTabs(title: "Noter"),
@@ -39,7 +41,7 @@ class HomeController extends GetxController with SingleGetTickerProviderMixin {
   InterstitialAd createInterstitialAd() {
     return InterstitialAd(
         targetingInfo: targetingInfo,
-        adUnitId: InterstitialAd.testAdUnitId,
+        adUnitId: interstitielUnitID,
         listener: (MobileAdEvent event) {
           print('interstitial event: $event');
         });
@@ -48,7 +50,7 @@ class HomeController extends GetxController with SingleGetTickerProviderMixin {
   BannerAd createBannerAdd() {
     return BannerAd(
         targetingInfo: targetingInfo,
-        adUnitId: BannerAd.testAdUnitId,
+        adUnitId: banniereUnitID,
         size: AdSize.smartBanner,
         listener: (MobileAdEvent event) {
           print('Bnner Event: $event');
@@ -65,7 +67,7 @@ class HomeController extends GetxController with SingleGetTickerProviderMixin {
     controller = new TabController(vsync: this, length: 3);
     myHandler = _tabs[0].obs;
     controller.addListener(_handleSelected);
-    FirebaseAdMob.instance.initialize(appId: BannerAd.testAdUnitId);
+    FirebaseAdMob.instance.initialize(appId: banniereUnitID);
     /*bannerAd = createBannerAdd()
       ..load()
       ..show();
@@ -87,8 +89,7 @@ class HomeController extends GetxController with SingleGetTickerProviderMixin {
     request.get().then((value) {
       if (value.statusCode == 200) {
         List jsonResponse = jsonDecode(value.body);
-        dataProduct.value =
-            jsonResponse.map((e) => Product.fromJson(e)).toList();
+        dataProduct.value =jsonResponse.map((e) => Product.fromJson(e)).toList();
         dataProductChip.value = dataProduct.reversed.toList()..shuffle();
         print("Loaded");
       } else {
@@ -129,5 +130,9 @@ class HomeController extends GetxController with SingleGetTickerProviderMixin {
         return dataProductChip.reversed.toList();
     }
     return dataProductChip;
+  }
+  toggleRepeat(bool newValue) {
+    isFrench = newValue;
+    update(['isRepeat', true]);
   }
 }

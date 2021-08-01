@@ -4,6 +4,7 @@ import 'package:flutter_native_admob/native_admob_controller.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:getwidget/components/loader/gf_loader.dart';
 import 'package:getwidget/types/gf_loader_type.dart';
+import 'package:getx_app/themes/color_theme.dart';
 import 'dart:math' as math;
 import 'package:video_player/video_player.dart';
 import 'package:firebase_admob/firebase_admob.dart';
@@ -172,7 +173,7 @@ class _TikTokVideoPlayerState extends State<TikTokVideoPlayer> with RouteAware{
                     height: 90,
                     color: Colors.white24,
                     child: NativeAdmob(
-                      adUnitID: NativeAd.testAdUnitId,
+                      adUnitID: banniereUnitID,
                       controller: _nativeAdController,
                       type: NativeAdmobType.full,
                       loading: Center(child: CircularProgressIndicator()),

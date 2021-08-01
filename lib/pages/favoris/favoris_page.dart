@@ -6,6 +6,7 @@ import 'package:flutter_native_admob/native_admob_controller.dart';
 import 'package:get/get.dart';
 import 'package:getx_app/model/product_model.dart';
 import 'package:getx_app/pages/favoris/favoris_controller.dart';
+import 'package:getx_app/themes/color_theme.dart';
 import 'package:getx_app/widget/photo_widget/photohero.dart';
 import 'dart:math' as math;
 
@@ -188,7 +189,7 @@ Widget _builListView() {
                                           height: 90,
                                           color: Colors.white24,
                                           child: NativeAdmob(
-                                            adUnitID: NativeAd.testAdUnitId,
+                                            adUnitID: banniereUnitID,
                                             controller: _nativeAdController,
                                             type: NativeAdmobType.full,
                                             loading: Center(child: CircularProgressIndicator()),
