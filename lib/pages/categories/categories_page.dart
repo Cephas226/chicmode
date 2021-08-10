@@ -317,7 +317,7 @@ _saveImage(url, name, context) async {
       result['filePath']
           .toString()
           .replaceAll(RegExp('file://'), '')
-    ], text: 'Great picture');
+    ], text: 'Pour plus de modèles de pagnes, télécharges l\'application ChicMode via ce lien 👉🏼 https://bit.ly/chicmode');
   } else if (await Permission.storage.request().isPermanentlyDenied) {
     await openAppSettings();
   } else if (await Permission.storage.request().isDenied) {
@@ -337,7 +337,7 @@ _shareImage(url, name, context) async {
       result['filePath']
           .toString()
           .replaceAll(RegExp('file://'), '')
-    ], text: 'Great picture');
+    ], text: 'Pour plus de modèles de pagnes, télécharges l\'application ChicMode via ce lien 👉🏼 https://bit.ly/chicmode');
   } else if (await Permission.storage.request().isPermanentlyDenied) {
     await openAppSettings();
   }

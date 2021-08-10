@@ -180,11 +180,11 @@ _buildDrawer(context) {
                 _buildDivider(),
                 _buildRow(Icons.bookmark, "Mes favoris",FavorisPage(),context),
                 _buildDivider(),
-                _buildRow(Icons.email, "Nous contacter",CategoriesPage(),context),
+                _buildRow(Icons.email, "Nous contacter",HomePage(),context),
                 _buildDivider(),
-                _buildRow(Icons.phone_android_outlined, "Nos applications",FavorisPage(),context),
+                _buildRow(Icons.phone_android_outlined, "Nos applications",HomePage(),context),
                 _buildDivider(),
-                _buildRow(Icons.info_outline,"Aide", FavorisPage(),context),
+                _buildRow(Icons.info_outline,"Aide", HomePage(),context),
                 _buildDivider(),
               ],
             ),
@@ -603,7 +603,7 @@ _shareImage(url, name, context) async {
       result['filePath']
           .toString()
           .replaceAll(RegExp('file://'), '')
-    ], text: 'Pour plus de modèles de pagnes, télécharges l\'application ChicMode via ce lien 👉🏼');
+    ], text: 'Pour plus de modèles de pagnes, télécharges l\'application ChicMode via ce lien 👉🏼 https://bit.ly/chicmode');
   } else if (await Permission.storage.request().isPermanentlyDenied) {
     await openAppSettings();
   }
