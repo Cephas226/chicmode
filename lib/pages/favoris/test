@@ -1,0 +1,81 @@
+Container(
+        child: Column(
+          children: [
+            Expanded(
+              child: Stepper(
+                steps: <Step>[
+                  Step(
+                      title: Text("Demande envoyé"),
+                      content: Align(
+                        alignment: Alignment.topLeft,
+                        child: Column(children: [
+                          Container(
+                            child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    "Votre demande à été bien reçu.Nous reviendrons vers vous dans un délais de 8 jours",
+                                    textAlign: TextAlign.start,
+                                  ),
+                                ]),
+                          )
+                        ]),
+                      ),
+                      subtitle: Text("Terminé"),
+                      isActive: true,
+                      state: StepState.complete),
+                  Step(
+                      title: Text("Demande en cours de traitement"),
+                      content: Align(
+                        alignment: Alignment.topLeft,
+                        child: Column(children: [
+                          Container(
+                            child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    "La demande est en cours de traitement par la responsable chargé des incriptions",
+                                    textAlign: TextAlign.start,
+                                  ),
+                                  // ElevatedButton(
+                                  //     style: ElevatedButton.styleFrom(
+                                  //       primary: Colors.red, // background
+                                  //       onPrimary: Colors.white, // foreground
+                                  //     ),
+                                  //     onPressed: () => {},
+                                  //     child: Text("Commenter"))
+                                ]),
+                          )
+                        ]),
+                      ),
+                      subtitle: Text("Terminé"),
+                      isActive: true,
+                      state: StepState.editing),
+                  Step(
+                      title: Text("Demande prête"),
+                      content: Text(""),
+                      subtitle: Text("Compled"),
+                      isActive: true,
+                      state: StepState.complete),
+                  Step(
+                      title: Text("Demande livrée"),
+                      content: Text(""),
+                      subtitle: Text("Compled"),
+                      isActive: true,
+                      state: StepState.complete),
+                ],
+                currentStep: _currentStep,
+                onStepTapped: (index) {
+                  setState(() {
+                    _currentStep = index;
+                  });
+                },
+                controlsBuilder: (BuildContext context,
+                        {VoidCallback? onStepContinue,
+                        VoidCallback? onStepCancel}) =>
+                    Container(),
+              ),
+            ),
+          ],
+        ),
+      ),
