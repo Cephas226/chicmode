@@ -1,246 +1,1748 @@
+------
+import 'dart:convert';
+import 'dart:io';
+
+import 'package:ecoleti/blocs/appBloc.dart';
+import 'package:ecoleti/environments/constants.dart';
+import 'package:ecoleti/interceptors/tokenInterceptor.dart';
+import 'package:ecoleti/locators/serviceLocator.dart';
+import 'package:ecoleti/models/appFile.dart';
+import 'package:ecoleti/models/devoir.dart';
+import 'package:ecoleti/models/homeworkFile.dart';
+import 'package:ecoleti/models/note.dart';
+import 'package:ecoleti/models/onesignalNotificationPayload.dart';
+import 'package:ecoleti/models/parentDTO.dart';
+import 'package:ecoleti/models/schoolInfo.dart';
+import 'package:ecoleti/models/student.dart';
+import 'package:ecoleti/pages/absenceRetardPage.dart';
+import 'package:ecoleti/pages/demandesPage.dart';
+import 'package:ecoleti/pages/devoirDetails.dart';
+import 'package:ecoleti/pages/homePage.dart';
+import 'package:ecoleti/pages/notesPage.dart';
+import 'package:ecoleti/pages/planningPage.dart';
+import 'package:ecoleti/pages/schoolEventsPage.dart';
+import 'package:ecoleti/providers/ecoletiProvider.dart';
+import 'package:ecoleti/utils/utils.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
-import 'package:getx_app/pages/favoris/favoris_page%20copy.dart';
-class FavorisPage extends StatefulWidget {
+import 'package:http/http.dart';
+import 'package:http_interceptor/http/http.dart';
+import 'package:onesignal_flutter/onesignal_flutter.dart';
+import 'package:package_info/package_info.dart';
+import 'package:rflutter_alert/rflutter_alert.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:flutter_app_badger/flutter_app_badger.dart';
+
+class AppProvider {
+  Client _clientWithInterceptor = InterceptedClient.build(interceptors: [
+    TokenInterceptor(),
+  ]);
+
+  Directory? extDir;
+  String? dirPath;
+
+  String adminUrl = "https://admin.ecoleti.co.ma:3031/";
+  late int planningNotificationCount = 0;
+  late int devoirNotificationCount = 0;
+  late int noteNotificationCount = 0;
+  late int demandeNotificationCount = 0;
+  late int retardabsenceNotificationCount = 0;
+  late int eventNotificationCount = 0;
+  late int visioNotificationCount = 0;
+  Future<void> initOneSignal(String username, BuildContext context) async {
+    //OneSignal.shared.setRequiresUserPrivacyConsent(true);
+    OneSignal.shared.setLogLevel(OSLogLevel.verbose, OSLogLevel.none);
+
+    OneSignal.shared.setNotificationWillShowInForegroundHandler(
+        (OSNotificationReceivedEvent event) {
+      print(
+          'xxxx-FOREGROUND HANDLER CALLED WITH--xxx-:\n${event.notification.jsonRepresentation().replaceAll("\\n", "\n")}');
+      String notifType = event.notification.additionalData!["type"];
+      saveNotificationCounter(notifType);
+      if (event.notification != null) {
+        OneSignal.shared
+            .completeNotification(event.notification.notificationId, true);
+              saveNotificationCounter(notifType);
+      } else {
+        OneSignal.shared
+            .completeNotification(event.notification.notificationId, false);
+      }
+    });
+
+    OneSignal.shared.setNotificationOpenedHandler(
+        (OSNotificationOpenedResult result) async {
+      try {
+        print("-----Yes0----");
+        if (result.notification.additionalData != null) {
+          print("-----Yes1----");
+          // OnesignaNotificationPayload payload = result.notification.additionalData![""];
+          /* OnesignaNotificationPayload.fromJson(
+                  result.notification.rawPayload!["additionalData"]); */
+          String payloadType = result.notification.additionalData!["type"];
+          int studentId = int.parse(result.notification.additionalData!["studentId"]);
+          int homeworkId =  int.parse(result.notification.additionalData!["homeworkId"]);
+          print("studentId est " +result.notification.additionalData!["studentId"]);
+          switch (payloadType) {
+            case 'HOMEWORK':
+              Devoir homework = await serviceLocator
+                  .get<EcoletiProvider>()
+                  .loadStudentDevoirById(homeworkId);
+                  print(homework.toJson());
+              decrNotificationCounter("HOMEWORK", this.devoirNotificationCount);
+              Navigator.of(context).pushAndRemoveUntil(
+                  MaterialPageRoute(
+                      builder: (context) => DevoirDetailsPage(
+                          devoir: homework, studentId: studentId)),
+                  (Route<dynamic> route) => false);
+              break;
+            case "PLANNING":
+              ParentDTO dto =
+                  await serviceLocator.get<EcoletiProvider>().loadParentDTO();
+              Student student = dto.students!
+                  .firstWhere((element) => element.id == studentId);
+              /* Navigator.of(context).pushAndRemoveUntil(
+                  MaterialPageRoute(
+                      builder: (context) => PlanningPage(
+                          selectedStudent: student, type: "cours")),
+                  (Route<dynamic> route) => false); */
+              decrNotificationCounter(
+                  "PLANNING", this.planningNotificationCount);
+              Navigator.of(context).push(MaterialPageRoute(
+                  builder: (context) => PlanningPage(
+                      selectedStudent: student, type: "Planning")));
+
+              break;
+
+            case "NOTE":
+              ParentDTO dto =
+                  await serviceLocator.get<EcoletiProvider>().loadParentDTO();
+              Student student = dto.students!
+                  .firstWhere((element) => element.id == studentId);
+              /*  Navigator.of(context).pushAndRemoveUntil(
+                  MaterialPageRoute(
+                      builder: (context) =>
+                          NotesPage(selectedStudent: student)),
+                  (Route<dynamic> route) => false); */
+              SharedPreferences sharedPreferences =
+                  await SharedPreferences.getInstance();
+              sharedPreferences.setInt("NOTE", 0);
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => NotesPage(
+                    selectedStudent: student,
+                  ),
+                ),
+              );
+
+              break;
+            case "EVENT":
+              decrNotificationCounter("EVENT", this.eventNotificationCount);
+              Navigator.of(context).push(MaterialPageRoute(
+                  builder: (context) => SchoolEventsPage(
+                        selectedTabIndex: 0,
+                      )));
+              break;
+             case "DELAY":
+              decrNotificationCounter("DELAY", this.eventNotificationCount);
+               ParentDTO dto =
+                  await serviceLocator.get<EcoletiProvider>().loadParentDTO();
+              Student student = dto.students!
+                  .firstWhere((element) => element.id == studentId);
+                  print("Je me prépare a afficher letudiant");
+                   print(studentId);
+              Navigator.of(context).push(MaterialPageRoute(
+                                builder: (context) => AbsenceRetardPage(
+                                      selectedStudent: student,
+                                ),
+                              ));
+                      break;
+            case "ASK":
+              decrNotificationCounter("ASK", this.demandeNotificationCount);
+              Navigator.of(context).push(
+                  MaterialPageRoute(builder: (context) => DemandesPage()));
+              break;
+
+            case 'VISIO':
+              ParentDTO dto =
+                  await serviceLocator.get<EcoletiProvider>().loadParentDTO();
+              Student student = dto.students!
+                  .firstWhere((element) => element.id == studentId);
+              decrNotificationCounter("VISIO", this.planningNotificationCount);
+              Navigator.of(context).pushAndRemoveUntil(
+                  MaterialPageRoute(
+                      builder: (context) => PlanningPage(
+                          selectedStudent: student, type: "visio")),
+                  (Route<dynamic> route) => false);
+              break;
+            case 'UPDATE':
+              if (Platform.isIOS)
+                launch("https://apps.apple.com/us/app/id${Constants.iosAppId}");
+              else
+                launch(
+                    "http://play.google.com/store/apps/details?id=${serviceLocator.get<AppBloc>().packageInfo!.packageName}");
+              break;
+          }
+        }
+      } on Exception catch (e) {
+        print(e);
+      }
+    });
+
+    OneSignal.shared
+        .setInAppMessageClickedHandler((OSInAppMessageAction action) {});
+
+    OneSignal.shared
+        .setSubscriptionObserver((OSSubscriptionStateChanges changes) {
+      //print("SUBSCRIPTION STATE CHANGED: ${changes.jsonRepresentation()}");
+    });
+
+    OneSignal.shared.setPermissionObserver((OSPermissionStateChanges changes) {
+      //print("PERMISSION STATE CHANGED: ${changes.jsonRepresentation()}");
+    });
+
+    OneSignal.shared.setEmailSubscriptionObserver(
+        (OSEmailSubscriptionStateChanges changes) {
+      //print("EMAIL SUBSCRIPTION STATE CHANGED ${changes.jsonRepresentation()}");
+    });
+
+    await OneSignal.shared.setAppId(Constants.onesignalAppId);
+
+    OneSignal.shared.sendTag("user_name", username).then((response) {
+      //print("Successfully sent tags with response: $response");
+    }).catchError((error) {
+      //print("Encountered an error sending tags: $error");
+    });
+
+    OneSignal.shared.setExternalUserId(username).then((response) {
+      //print("Successfully sent external userId with response: $response");
+    }).catchError((error) {
+      //print("Encountered an error sending ExternalUserId: $error");
+    });
+  }
+
+  Future<void> downloadFile(HomeworkFile homeworkFile, int devoirId) async {
+    try {
+      Response response = await _clientWithInterceptor.get(Uri.parse(
+          "${Constants.ecoletiApiUrl}homework/file/$devoirId/${homeworkFile.path}"));
+      if (response.statusCode == 200) {
+        extDir = await utils.getExtDirectory();
+        dirPath = '${extDir!.path}/homeworks/$devoirId/files/';
+        await Directory(dirPath!).create(recursive: true);
+
+        File f = File("$dirPath${homeworkFile.path}");
+        var raf = f.openSync(mode: FileMode.write);
+        raf.writeFromSync(response.bodyBytes);
+        await raf.close();
+      } else {
+        throw Exception("here");
+      }
+    } on Exception catch (e) {
+      throw e;
+    }
+  }
+
+  Future<bool> getFirstLoadPref() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    bool? firstLoad = prefs.getBool("firstLoad");
+    return firstLoad != null ? firstLoad : true;
+  }
+
+  Future<bool> setFirstLoadPref() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    var res = await prefs.setBool('firstLoad', false);
+    return false;
+  }
+
+  Future<String> getVisioUrl() async {
+    try {
+      Response response = await _clientWithInterceptor
+          .get(Uri.parse("${adminUrl}setting/global/visio-url"))
+          .timeout(Duration(seconds: 10));
+      if (response.statusCode == 200)
+        return jsonDecode(response.body);
+      else
+        throw Exception();
+    } on Exception catch (e) {
+      return "https://meet.jit.si/";
+    }
+  }
+
+  Future<bool> isUpToDate() async {
+    try {
+      Response _response;
+      if (Platform.isAndroid)
+        _response = await _clientWithInterceptor.get(Uri.parse(
+            "${adminUrl}setting/mobile/school/${Constants.schoolId}/ANDROID_VERSION"));
+      else
+        _response = await _clientWithInterceptor.get(Uri.parse(
+            "${adminUrl}setting/mobile/school/${Constants.schoolId}/IOS_VERSION"));
+
+      if (_response.statusCode == 200) {
+        PackageInfo _packageInfo = await PackageInfo.fromPlatform();
+
+        print(packageVersionToInt(_packageInfo.version));
+        print(packageVersionToInt(jsonDecode(_response.body)));
+        return packageVersionToInt(_packageInfo.version) >=
+            packageVersionToInt(jsonDecode(_response.body));
+      } else
+        return true;
+    } on Exception catch (e) {
+      return true;
+    }
+  }
+
+  int packageVersionToInt(String version) {
+    return int.parse(version.replaceAll(".", ""));
+  }
+
+  checkUpdate(BuildContext context) async {
+    bool _isAppUpToDate = await serviceLocator.get<AppProvider>().isUpToDate();
+    if (!_isAppUpToDate) {
+      Alert(
+        context: context,
+        title: "Mise à jour requise",
+        desc: "Veuillez mettre à jour votre application.",
+        type: AlertType.warning,
+        style: AlertStyle(isCloseButton: false, isOverlayTapDismiss: false),
+        buttons: [
+          DialogButton(
+            child: Text(
+              "Mettre à jour",
+              style: TextStyle(color: Colors.white, fontSize: 15),
+            ),
+            onPressed: () {
+              if (Platform.isIOS)
+                launch("https://apps.apple.com/us/app/id${Constants.iosAppId}");
+              else
+                launch(
+                    "https://play.google.com/store/apps/details?id=${serviceLocator.get<AppBloc>().packageInfo!.packageName}");
+            },
+            width: 120,
+          )
+        ],
+      ).show();
+    }
+  }
+
+  Future<SchoolInfo> getSchoolInfo() async {
+    SharedPreferences _sharedPreferences =
+        await SharedPreferences.getInstance();
+    if (null == _sharedPreferences.get("schoolInfos")) {
+      try {
+        Response _response = await _clientWithInterceptor
+            .get(Uri.parse("${Constants.configurationApiUrl}school/all"));
+        if (_response.statusCode == 200) {
+          final jsonResponse = jsonDecode(_response.body);
+          SchoolInfo _info = SchoolInfo.fromJson(jsonResponse[0]);
+          _sharedPreferences.setString("schoolInfos", _response.body);
+          return _info;
+        } else {
+          throw Exception();
+        }
+      } on Exception catch (e) {
+        throw e;
+      }
+    } else {
+      String result = _sharedPreferences.getString("schoolInfos")!;
+      return SchoolInfo.fromJson(jsonDecode(result)[0]);
+    }
+  }
+
+  Future<void> saveNotificationCounter(String notificationType) async {
+    SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
+    switch (notificationType) {
+      case "HOMEWORK":
+        this.devoirNotificationCount++;
+        print("Le counteur est" +this.devoirNotificationCount.toString());
+        sharedPreferences.setInt(
+            notificationType.toString(), this.devoirNotificationCount);
+        break;
+      case "PLANNING":
+        this.planningNotificationCount++;
+        sharedPreferences.setInt(
+            notificationType.toString(), this.planningNotificationCount);
+        break;
+      case "NOTE":
+       print("La on"+noteNotificationCount.toString());
+        this.noteNotificationCount++;
+        sharedPreferences.setInt(
+            notificationType.toString(), this.noteNotificationCount);
+             print("noteNotificationCount"+noteNotificationCount.toString());
+        break;
+
+      case "ASK":
+        this.demandeNotificationCount++;
+        sharedPreferences.setInt(
+            notificationType.toString(), this.demandeNotificationCount);
+        break;
+
+      case "DELAY":
+        this.retardabsenceNotificationCount++;
+        sharedPreferences.setInt(
+            notificationType.toString(), this.retardabsenceNotificationCount);
+        break;
+      case "EVENT":
+        this.eventNotificationCount++;
+        sharedPreferences.setInt(
+            notificationType.toString(), this.eventNotificationCount);
+        break;
+      case "VISIO":
+        this.visioNotificationCount++;
+        sharedPreferences.setInt(
+            notificationType.toString(), this.visioNotificationCount);
+        break;
+    }
+    FlutterAppBadger.updateBadgeCount(1);
+  }
+
+  Future<void> decrNotificationCounter(
+      String notificationType, int counter) async {
+    if (counter > 0) {
+      SharedPreferences sharedPreferences =
+          await SharedPreferences.getInstance();
+      counter = 0;
+      sharedPreferences.setInt(notificationType.toString(), 0);
+    }
+  }
+
+  Future<void> downloadEventFile(AppFile file) async {
+    try {
+      Response response = await _clientWithInterceptor.get(Uri.parse(
+          "${Constants.ecoletiApiUrl}event/file/${file.elementId}/${file.name}"));
+      if (response.statusCode == 200) {
+        extDir = await utils.getExtDirectory();
+        dirPath = '${extDir!.path}/events/${file.elementId}/files/';
+        await Directory(dirPath!).create(recursive: true);
+
+        File f = File("$dirPath${file.name}");
+        var raf = f.openSync(mode: FileMode.write);
+        raf.writeFromSync(response.bodyBytes);
+        await raf.close();
+      } else {
+        throw Exception("here");
+      }
+    } on Exception catch (e) {
+      throw e;
+    }
+  }
+
+  Future<void> updateEventSeen(int id, int schoolYear) async {
+    try {
+      Response response = await _clientWithInterceptor.get(Uri.parse(
+          "${Constants.ecoletiApiUrl}event/user-read/$id/$schoolYear"));
+      print(response.statusCode);
+    } on Exception catch (e) {
+      throw e;
+    }
+  }
+}
+---------
+import 'package:badges/badges.dart';
+import 'package:ecoleti/blocs/appBloc.dart';
+import 'package:ecoleti/locators/serviceLocator.dart';
+import 'package:ecoleti/models/parent.dart';
+import 'package:ecoleti/models/parentDTO.dart';
+import 'package:ecoleti/pages/absenceRetardPage.dart';
+import 'package:ecoleti/pages/demandesPage.dart';
+import 'package:ecoleti/pages/devoirsPage.dart';
+import 'package:ecoleti/pages/notesPage.dart';
+import 'package:ecoleti/pages/planningPage.dart';
+import 'package:ecoleti/pages/schoolEventsPage.dart';
+import 'package:ecoleti/providers/ecoletiProvider.dart';
+import 'package:ecoleti/themes/globalTheme.dart';
+import 'package:ecoleti/utils/utils.dart';
+import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:url_launcher/url_launcher.dart';
+
+class HomePage extends StatefulWidget {
+  ScaffoldState? scaffoldState;
+  Parent? parent;
+
+  HomePage({this.scaffoldState, this.parent});
   @override
-  _StepperDemoState createState() => _StepperDemoState();
+  _HomePageState createState() => _HomePageState();
 }
 
-class _StepperDemoState extends State<FavorisPage> {
-  int _currentStep = 0;
-  StepperType stepperType = StepperType.vertical;
+class _HomePageState extends State<HomePage> {
+  ParentDTO? _parentDTO;
+  late int planningNotificationCount = 0;
+  late int devoirNotificationCount = 0;
+  late int noteNotificationCount = 0;
+  late int demandeNotificationCount = 0;
+  late int retardabsenceNotificationCount = 0;
+  late int eventNotificationCount = 0;
+  late int visioNotificationCount = 0;
+  initParentDTO() async {
+    _parentDTO = await serviceLocator.get<EcoletiProvider>().loadParentDTO();
+  }
+
+  @override
+  void initState() {
+    initParentDTO();
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        automaticallyImplyLeading: false,
-        title: Text('Page1'),
-        centerTitle: true,
-      ),
-      body: 
-        Theme(  data: ThemeData(
-                  accentColor: Colors.orange,
-                  primarySwatch: Colors.orange,
-                  colorScheme: ColorScheme.light(
-                    primary: Colors.orange
-                  )
-                ),
-        child: Container(
-        child: Column(
-          children: [
-           
-            Card(
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(15.0),
-              ),
-              elevation: 5.0,
-              child: ClipPath(
-                clipper: ShapeBorderClipper(
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10))),
-                child: Container(
-                    height: 70,
-                    decoration: BoxDecoration(
-                      border: Border(
-                          left: BorderSide(color: Color(0XFF001a3e), width: 5)),
-                      color: Colors.white,
-                    ),
-                    padding: EdgeInsets.all(10.0),
-                    alignment: Alignment.topCenter,
-                    child: Container(
-                      child: ListTile(
-                        title: Text("Demande d'attestation"),
-                        trailing: IconButton(
-                            onPressed: () => {
-                                  showModalBottomSheet(
-                                    shape: RoundedRectangleBorder(
-                                                            borderRadius:
-                                                                BorderRadius
-                                                                    .circular(
-                                                                        10.0)),
-                                      context: context,
-                                      builder: (context) {
-                                        return Column(
-                                          mainAxisSize: MainAxisSize.min,
-                                          children: <Widget>[
-                                             Container(child: Text("Demande d'attestation d'inscription"),padding: EdgeInsets.all(20),),
-                                            Expanded(
-                                              child: Stepper(
-                                                steps: <Step>[
-                                                  Step(
-                                                      title: Text(
-                                                          "Demande envoyé"),
-                                                      content: Align(
-                                                          alignment:
-                                                              Alignment.topLeft,
-                                                          child: Column(
-                                                            children: [
-                                                              Card(
-                                                                shape:
-                                                                    RoundedRectangleBorder(
-                                                                  borderRadius:
-                                                                      BorderRadius
-                                                                          .circular(
-                                                                              15.0),
-                                                                ),
-                                                                elevation: 5.0,
-                                                                child: ClipPath(
-                                                                  clipper: ShapeBorderClipper(
-                                                                      shape: RoundedRectangleBorder(
-                                                                          borderRadius:
-                                                                              BorderRadius.circular(10))),
-                                                                  child: Container(
-                                                                      height: 60,
-                                                                      decoration: BoxDecoration(
-                                                                        border: Border(
-                                                                            left:
-                                                                                BorderSide(color: Colors.red, width: 10)),
-                                                                        color: Colors
-                                                                            .white,
-                                                                      ),
-                                                                      padding: EdgeInsets.all(10.0),
-                                                                      alignment: Alignment.topCenter,
-                                                                      child: Container(
-                                                                        child: Text(
-                                                                            "Votre demande a été bien reçu. Nous reviendrons vers vous dans un bref délai"),
-                                                                      )),
-                                                                ),
-                                                              )
-                                                            ],
-                                                          )),
-                                                      subtitle: Text("Terminé"),
-                                                      isActive: true,
-                                                      state:
-                                                          StepState.complete),
-                                                  Step(
-                                                      title: Text(""),
-                                                      content: Text(""),
-                                                      subtitle: Text(""),
-                                                      isActive: false,
-                                                      state: StepState.indexed),
-                                                  Step(
-                                                      title: Text(""),
-                                                      content: Text(
-                                                          "Votre dossier manque de photo"),
-                                                      subtitle: Text(""),
-                                                      isActive: false,
-                                                      state: StepState.indexed),
-                                                  Step(
-                                                      title: Text(""),
-                                                      content: Text(""),
-                                                      subtitle: Text(""),
-                                                      isActive: false,
-                                                      state: StepState.indexed),
-                                                ],
-                                                currentStep: _currentStep,
-                                                onStepTapped: (index) {
-                                                  setState(() {
-                                                    _currentStep = index;
-                                                  });
-                                                },
-                                                controlsBuilder: (BuildContext
-                                                            context,
-                                                        {VoidCallback?
-                                                            onStepContinue,
-                                                        VoidCallback?
-                                                            onStepCancel}) =>
-                                                    Container(),
-                                              ),
-                                            ),
-                                          ],
-                                        );
-                                      }
-                                      )
-                                },
-                            icon: Icon(Icons.remove_red_eye)),
-                      ),
-                    )),
-              ),
-            ),
-            Card(
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(15.0),
-              ),
-              elevation: 5.0,
-              child: ClipPath(
-                clipper: ShapeBorderClipper(
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10))),
-                child: Container(
-                    height: 70,
-                    decoration: BoxDecoration(
-                      border: Border(
-                      left: BorderSide(color: Color(0XFF001a3e), width: 5)),
-                      color: Colors.white,
-                    ),
-                    padding: EdgeInsets.all(10.0),
-                    alignment: Alignment.topCenter,
-                    child: Container(
-                      child: ListTile(
-                        title: Text("Demande d'attestation d'inscription"),
-                        trailing: IconButton(
-                            onPressed: () => {},
-                            icon: Icon(Icons.remove_red_eye)),
-                      ),
-                    )),
-              ),
-            ),
-            Card(
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(15.0),
-              ),
-              elevation: 5.0,
-              child: ClipPath(
-                clipper: ShapeBorderClipper(
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10))),
-                child: Container(
-                    height: 70,
-                    decoration: BoxDecoration(
-                      border: Border(
-                         left: BorderSide(color: Color(0XFF001a3e), width: 5)),
-                      color: Colors.white,
-                    ),
-                    padding: EdgeInsets.all(10.0),
-                    alignment: Alignment.topCenter,
-                    child: Container(
-                      child: ListTile(
-                        title: Text("Demande d'attestation d'inscription"),
-                        trailing: IconButton(
-                            onPressed: () => {},
-                            icon: Icon(Icons.remove_red_eye)),
-                      ),
-                    )),
-              ),
-            )
-          ],
+        backgroundColor: GlobalTheme.primaryColor,
+        leading: IconButton(
+          icon: Icon(
+            Icons.menu,
+            color: Colors.white,
+          ),
+          onPressed: openDrawer,
         ),
-      ),),
-      floatingActionButton: FloatingActionButton(
-        child: Icon(Icons.add),
-        onPressed: ()=>{
-          Get.to(FavorisPage2()),
-        },
+        title: Container(
+          height: 20,
+          child: Image.asset("assets/icons/ecoletilogoblanc.png"),
+        ),
+        actions: [
+          Container(
+            padding: EdgeInsets.only(right: 5),
+            child: Center(
+                child: Text(
+              "v${serviceLocator.get<AppBloc>().appVersion}",
+              style: TextStyle(fontWeight: FontWeight.bold),
+            )),
+          )
+        ],
+        centerTitle: true,
+        elevation: 0,
+      ),
+      body: CustomScrollView(
+        slivers: [
+          SliverList(
+            delegate: SliverChildListDelegate([
+              Container(
+                height: 70,
+                color: GlobalTheme.primaryColor,
+                padding: EdgeInsets.only(left: 8, bottom: 15),
+                child: Row(
+                  children: [
+                    Container(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            "${utils.getCivilite(widget.parent!.gendar!)} ${widget.parent!.firstName} ${widget.parent!.lastName}",
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ]),
+          ),
+          SliverPadding(
+            padding: EdgeInsets.all(8),
+            sliver: SliverGrid.count(
+              crossAxisCount: 3,
+              mainAxisSpacing: 8.0,
+              crossAxisSpacing: 8.0,
+              children: [
+                // ClipRRect(
+                //   borderRadius: BorderRadius.circular(5),
+                //   child: Container(
+                //     height: 60,
+                //     width: 60,
+                //     child: Image.asset("assets/icons/eleve_inscrit.png"),
+                //   ),
+                // ),
+                /* ClipRRect(
+                  borderRadius: BorderRadius.circular(5),
+                  child: Container(
+                    height: 60,
+                    width: 60,
+                    child: InkWell(
+                      child: Ink.image(
+                        image: AssetImage("assets/icons/Emploi du temps.png"),
+                      ),
+                      onTap: () async {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => PlanningPage(
+                              selectedStudent: _parentDTO!.students![0],
+                              type: 'Planning',
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                ), */
+                /* ClipRRect(
+                  borderRadius: BorderRadius.circular(5),
+                  child: Container(
+                    height: 60,
+                    width: 60,
+                    child: InkWell(
+                      child: Ink.image(
+                        image: AssetImage("assets/icons/devoir1.png"),
+                      ),
+                      onTap: () async {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => DevoirsPage(
+                              selectedStudent: _parentDTO!.students![0],
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                ), */
+                /* ClipRRect(
+                  borderRadius: BorderRadius.circular(5),
+                  child: Container(
+                    height: 60,
+                    width: 60,
+                    child: InkWell(
+                      child: Ink.image(
+                        image: AssetImage("assets/icons/notes1.png"),
+                      ),
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => NotesPage(
+                              selectedStudent: _parentDTO!.students![0],
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                ), */
+                /*  ClipRRect(
+                  borderRadius: BorderRadius.circular(5),
+                  child: Container(
+                    height: 60,
+                    width: 60,
+                    child: InkWell(
+                      child: Ink.image(
+                        image: AssetImage("assets/icons/retard-absence.png"),
+                      ),
+                      onTap: () async {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => AbsenceRetardPage(
+                              selectedStudent: _parentDTO!.students![0],
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                ), */
+
+                /* ClipRRect(
+                  borderRadius: BorderRadius.circular(5),
+                  child: Container(
+                    height: 60,
+                    width: 60,
+                    child: Badge(
+                      showBadge: false,
+                      padding: EdgeInsets.all(8),
+                      badgeContent: Text(
+                        "4",
+                        style: TextStyle(color: Colors.white),
+                      ),
+                      position: BadgePosition.topEnd(top: 5, end: 5),
+                      child: InkWell(
+                        child: Ink.image(
+                          image: AssetImage("assets/icons/avenement.png"),
+                        ),
+                        onTap: () async {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => SchoolEventsPage(
+                                selectedTabIndex: 0,
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                  ),
+                ), */
+                // ClipRRect(
+                //   borderRadius: BorderRadius.circular(5),
+                //   child: Container(
+                //     height: 60,
+                //     width: 60,
+                //     child: Image.asset("assets/icons/chat1.png"),
+                //   ),
+                // ),
+                // ClipRRect(
+                //   borderRadius: BorderRadius.circular(5),
+                //   child: Container(
+                //     height: 60,
+                //     width: 60,
+                //     child: InkWell(
+                //       child: Ink.image(
+                //         image: AssetImage("assets/icons/visio_conférence.png"),
+                //       ),
+                //       onTap: () async {
+                //         Navigator.push(
+                //           context,
+                //           MaterialPageRoute(
+                //             builder: (context) => PlanningPage(
+                //               selectedStudent: _parentDTO!.students![0],
+                //               type: 'Visio',
+                //             ),
+                //           ),
+                //         );
+                //       },
+                //     ),
+                //   ),
+                // ),
+                // ClipRRect(
+                //   borderRadius: BorderRadius.circular(5),
+                //   child: Container(
+                //     height: 60,
+                //     width: 60,
+                //     child: InkWell(
+                //       child: Ink.image(
+                //         image: AssetImage("assets/icons/paiement.png"),
+                //       ),
+                //       onTap: () async {
+                //         Navigator.push(
+                //           context,
+                //           MaterialPageRoute(
+                //             builder: (context) => PaiementPage(
+                //               selectedTabIndex: 0,
+                //             ),
+                //           ),
+                //         );
+                //       },
+                //     ),
+                //   ),
+                // ),
+                /* ClipRRect(
+                  borderRadius: BorderRadius.circular(5),
+                  child: Container(
+                    height: 60,
+                    width: 60,
+                    child: Badge(
+                      showBadge: false,
+                      padding: EdgeInsets.all(8),
+                      badgeContent: Text(
+                        "4",
+                        style: TextStyle(color: Colors.red),
+                      ),
+                      position: BadgePosition.topEnd(top: 5, end: 5),
+                      child: InkWell(
+                        child: Ink.image(
+                          image: AssetImage("assets/icons/demandes.png"),
+                        ),
+                        onTap: () async {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => DemandesPage(),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                  ),
+                ), */
+                /*   ClipRRect(
+                  borderRadius: BorderRadius.circular(5),
+                  child: Container(
+                    height: 60,
+                    width: 60,
+                    child: InkWell(
+                      child: Ink.image(
+                        image: AssetImage("assets/icons/appel.png"),
+                      ),
+                      onTap: () async {
+                        launch(
+                            "tel:${serviceLocator.get<AppBloc>().schoolInfos!.phones![0]}");
+                      },
+                    ),
+                  ),
+                ), */
+                // ClipRRect(
+                //   borderRadius: BorderRadius.circular(5),
+                //   child: Container(
+                //     height: 60,
+                //     width: 60,
+                //     child: Image.asset(
+                //       "assets/icons/reclamation1.png",
+                //     ),
+                //   ),
+                // ),
+
+                /*  ---Mes modification */
+                /*  Badge(
+                  badgeContent: Text('4'),
+                  child: InkWell(
+                    child: Ink.image(
+                      image: AssetImage("assets/icons/Emploi du temps.png"),
+                    ),
+                    onTap: () async {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => PlanningPage(
+                            selectedStudent: _parentDTO!.students![0],
+                            type: 'Planning',
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ), */
+                /*  ClipRRect(
+                    borderRadius: BorderRadius.circular(5),
+                    child: 
+                    /* Container(
+                    height: 60,
+                    width: 60,
+                    child: InkWell(
+                      child: Ink.image(
+                        image: AssetImage("assets/icons/Emploi du temps.png"),
+                      ),
+                      onTap: () async {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => PlanningPage(
+                              selectedStudent: _parentDTO!.students![0],
+                              type: 'Planning',
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ), */
+                    ), */
+                /*  Stack(
+                      children: [
+                        Positioned(
+                          right: 0,
+                          top: -10,
+                          child: Badge(
+                            padding: EdgeInsets.all(10),
+                            badgeContent: Text('6'),
+                           /*  child: InkWell(
+                              child: Ink.image(
+                                image: AssetImage("assets/icons/devoir1.png"),
+                              ),
+                              onTap: () async {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => DevoirsPage(
+                                      selectedStudent: _parentDTO!.students![0],
+                                    ),
+                                  ),
+                                );
+                              },
+                            ), */
+                          ),
+                        ),
+                        InkWell(
+                              child: Ink.image(
+                                image: AssetImage("assets/icons/devoir1.png"),
+                              ),
+                              onTap: () async {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => DevoirsPage(
+                                      selectedStudent: _parentDTO!.students![0],
+                                    ),
+                                  ),
+                                );
+                              },
+                            )
+                      ],
+                    ), */
+                /*  Badge(
+                    padding: EdgeInsets.all(10),
+                    showBadge: this.getNotificationCounter("PLANNING") == 0
+                        ? false
+                        : true,
+                    badgeContent: Text(
+                        this.planningNotificationCount.toString(),
+                        style: TextStyle(
+                            fontWeight: FontWeight.bold, color: Colors.white)),
+                    animationDuration: Duration(milliseconds: 300),
+                    animationType: BadgeAnimationType.scale,
+                    position: BadgePosition.topEnd(top: -10, end: -5),
+                    child: InkWell(
+                      child: Ink.image(
+                        image: AssetImage("assets/icons/Emploi du temps.png"),
+                      ),
+                      onTap: () async {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => PlanningPage(
+                              selectedStudent: _parentDTO!.students![0],
+                              type: 'Planning',
+                            ),
+                          ),
+                        );
+                        setState(() {
+                          decrNotificationCounter(
+                              "PLANNING", this.planningNotificationCount);
+                        });
+                      },
+                    )), */
+                Stack(
+                  clipBehavior: Clip.none,
+                  children: [
+                    ClipRRect(
+                      child: Container(
+                        child: InkWell(
+                          child: Ink.image(
+                            image:
+                                AssetImage("assets/icons/Emploi du temps.png"),
+                          ),
+                          onTap: () async {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => PlanningPage(
+                                  selectedStudent: _parentDTO!.students![0],
+                                  type: 'Planning',
+                                ),
+                              ),
+                            );
+                            setState(() {
+                              decrNotificationCounter("PLANNING",this.planningNotificationCount);
+                            });
+                          },
+                        ),
+                      ),
+                    ),
+                    this.getNotificationCounter("PLANNING") != 0 &&
+                            this.planningNotificationCount != 0
+                        ? buildPositionned(
+                            this.planningNotificationCount.toString())
+                        : Container()
+                  ],
+                ),
+                Stack(
+                  clipBehavior: Clip.none,
+                  children: [
+                    ClipRRect(
+                      child: Container(
+                        child: InkWell(
+                          child: Ink.image(
+                            image: AssetImage("assets/icons/devoir1.png"),
+                          ),
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => DevoirsPage(
+                                  selectedStudent: _parentDTO!.students![0],
+                                ),
+                              ),
+                            );
+                            setState(() {
+                              decrNotificationCounter(
+                                  "HOMEWORK",this.devoirNotificationCount);
+                            });
+                          },
+                        ),
+                      ),
+                    ),
+                    this.getNotificationCounter("HOMEWORK") != 0 &&
+                            this.devoirNotificationCount != 0
+                        ? buildPositionned(
+                            this.devoirNotificationCount.toString())
+                        : Container()
+                  ],
+                ),
+                Stack(
+                  clipBehavior: Clip.none,
+                  children: [
+                    ClipRRect(
+                      child: Container(
+                        child: InkWell(
+                          child: Ink.image(
+                            image: AssetImage("assets/icons/notes1.png"),
+                          ),
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => NotesPage(
+                                  selectedStudent: _parentDTO!.students![0],
+                                ),
+                              ),
+                            );
+                            setState(() {
+                              decrNotificationCounter(
+                                  "NOTE",this.noteNotificationCount);
+                                  this.getNotificationCounter("notificationType");
+                            });
+                          },
+                        ),
+                      ),
+                    ),
+                    this.getNotificationCounter("NOTE") != 0 &&
+                            this.noteNotificationCount != 0
+                        ? buildPositionned(
+                            this.noteNotificationCount.toString())
+                        : Container()
+                  ],
+                ),
+                Stack(
+                  clipBehavior: Clip.none,
+                  children: [
+                    ClipRRect(
+                      child: Container(
+                        child: InkWell(
+                          child: Ink.image(
+                            image: AssetImage("assets/icons/demandes.png"),
+                          ),
+                          onTap: () async {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => DemandesPage(),
+                              ),
+                            );
+                            
+                        SharedPreferences sharedPreferences =await SharedPreferences.getInstance();
+                                sharedPreferences.setInt("ASK", 0);
+                               this.getNotificationCounter("ASK");
+                            setState(() {
+                                this.demandeNotificationCount=0; 
+                            });
+                          },
+                        ),
+                      ),
+                    ),
+                    this.getNotificationCounter("ASK") != 0 &&
+                            this.demandeNotificationCount != 0
+                        ? buildPositionned(
+                            this.demandeNotificationCount.toString())
+                        : Container()
+                  ],
+                ),
+                 Stack(
+                  clipBehavior: Clip.none,
+                  children: [
+                    ClipRRect(
+                      child: Container(
+                        child: InkWell(
+                          child: Ink.image(
+                            image: AssetImage("assets/icons/avenement.png"),
+                          ),
+                          onTap: () async {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => SchoolEventsPage(
+                                  selectedTabIndex: 0,
+                                ),
+                              ),
+                            );
+                            setState(() {
+                              decrNotificationCounter(
+                                  "EVENT",eventNotificationCount);
+                            });
+                          },
+                        ),
+                      ),
+                    ),
+                    this.getNotificationCounter("EVENT") != 0 &&
+                            this.eventNotificationCount != 0
+                        ? buildPositionned(
+                            this.eventNotificationCount.toString())
+                        : Container()
+                  ],
+                ),
+                Stack(
+                  clipBehavior: Clip.none,
+                  children: [
+                    ClipRRect(
+                      child: Container(
+                        child: InkWell(
+                          child: Ink.image(
+                            image: AssetImage("assets/icons/reclamation1.png"),
+                          ),
+                          onTap: () async {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => DemandesPage(),
+                              ),
+                            );
+                            setState(() { 
+                            });
+                          },
+                        ),
+                      ),
+                    ),
+                    this.getNotificationCounter("ASK") != 0 &&
+                            this.demandeNotificationCount != 0
+                        ? buildPositionned(
+                            this.demandeNotificationCount.toString())
+                        : Container()
+                  ],
+                ),
+                Stack(
+                  clipBehavior: Clip.none,
+                  children: [
+                    ClipRRect(
+                      child: Container(
+                        child: InkWell(
+                          child: Ink.image(
+                            image:
+                                AssetImage("assets/icons/retard-absence.png"),
+                          ),
+                          onTap: () async {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => AbsenceRetardPage(
+                                  selectedStudent: _parentDTO!.students![0],
+                                ),
+                              ),
+                            );
+                            setState(() {
+                              decrNotificationCounter("DELAY",this.retardabsenceNotificationCount);
+                            });
+                          },
+                        ),
+                      ),
+                    ),
+                    this.getNotificationCounter("DELAY") != 0 &&
+                            this.retardabsenceNotificationCount != 0
+                        ? buildPositionned(
+                            this.retardabsenceNotificationCount.toString())
+                        : Container()
+                  ],
+                ),
+               
+                Stack(
+                  clipBehavior: Clip.none,
+                  children: [
+                    ClipRRect(
+                      child: Container(
+                        child: InkWell(
+                          child: Ink.image(
+                            image:
+                                AssetImage("assets/icons/visio_conférence.png"),
+                          ),
+                          onTap: () async {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => PlanningPage(
+                                  selectedStudent: _parentDTO!.students![0],
+                                  type: 'Visio',
+                                ),
+                              ),
+                            );
+                            setState(() {
+                              decrNotificationCounter(
+                                  "VISIO",visioNotificationCount);
+                            });
+                          },
+                        ),
+                      ),
+                    ),
+                    this.getNotificationCounter("VISIO") != 0 &&
+                            this.visioNotificationCount != 0
+                        ? buildPositionned(
+                            this.visioNotificationCount.toString())
+                        : Container()
+                  ],
+                ),
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(5),
+                  child: Container(
+                    height: 60,
+                    width: 60,
+                    child: InkWell(
+                      child: Ink.image(
+                        image: AssetImage("assets/icons/appel.png"),
+                      ),
+                      onTap: () async {
+                        launch(
+                            "tel:${serviceLocator.get<AppBloc>().schoolInfos!.phones![0]}");
+                      },
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          )
+        ],
       ),
     );
   }
 
-  switchStepsType() {
-    setState(() => stepperType == StepperType.vertical
-        ? stepperType = StepperType.horizontal
-        : stepperType = StepperType.vertical);
+  getNotificationCounter(notificationType) async {
+    SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
+    switch (notificationType) {
+      case "HOMEWORK":
+        setState(() {
+          this.devoirNotificationCount =
+              (sharedPreferences.getInt(notificationType) ?? 0);
+        });
+        break;
+      case "PLANNING":
+        setState(() {
+          this.planningNotificationCount =
+              (sharedPreferences.getInt(notificationType) ?? 0);
+        });
+        break;
+      case "NOTE":
+        setState(() {
+          this.noteNotificationCount =
+              (sharedPreferences.getInt(notificationType) ?? 0);
+        });
+        break;
+      case "ASK":
+        setState(() {
+          this.demandeNotificationCount =
+              (sharedPreferences.getInt(notificationType) ?? 0);
+        });
+        break;
+
+          case "DELAY":
+        setState(() {
+          this.retardabsenceNotificationCount =
+              (sharedPreferences.getInt(notificationType) ?? 0);
+        });
+        break;
+      case "EVENT":
+        setState(() {
+          this.eventNotificationCount =
+              (sharedPreferences.getInt(notificationType) ?? 0);
+        });
+        break;
+      case "VISIO":
+        setState(() {
+          this.visioNotificationCount =
+              (sharedPreferences.getInt(notificationType) ?? 0);
+        });
+        break;
+    }
+  }
+Future<void> decrNotificationCounter(
+      String notificationType, int counter) async {
+    if (counter > 0) {
+      SharedPreferences sharedPreferences =
+          await SharedPreferences.getInstance();
+     setState(()  {
+        counter=0;
+      sharedPreferences.setInt(notificationType.toString(), counter);
+      this.noteNotificationCount=0;
+     });
+    }
   }
 
-  tapped(int step) {
-    setState(() => _currentStep = step);
+
+  openDrawer() {
+    //print("hello");
+    ScaffoldState? scaffoldState =
+        context.findRootAncestorStateOfType<ScaffoldState>();
+    scaffoldState!.openDrawer();
   }
 
-  continued() {
-    _currentStep < 2 ? setState(() => _currentStep += 1) : null;
+  buildPositionned(String notificationCounter) {
+    return Positioned(
+      right: -2,
+      top: -10,
+      child: new Container(
+        padding: EdgeInsets.all(10),
+        decoration: BoxDecoration(color: Colors.red, shape: BoxShape.circle),
+        child: Text(
+          notificationCounter,
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: 12,
+            fontWeight: FontWeight.bold,
+          ),
+          textAlign: TextAlign.center,
+        ),
+      ),
+    );
+  }
+}
+----+
+import 'package:ecoleti/blocs/demandesBloc.dart';
+import 'package:ecoleti/blocs/demandesTypeBloc.dart';
+import 'package:ecoleti/events/demandesEvents.dart';
+import 'package:ecoleti/locators/serviceLocator.dart';
+import 'package:ecoleti/models/demande.dart';
+import 'package:ecoleti/models/demandeType.dart';
+import 'package:ecoleti/providers/ecoletiProvider.dart';
+import 'package:ecoleti/states/demandesStates.dart';
+import 'package:ecoleti/themes/globalTheme.dart';
+import 'package:ecoleti/utils/utils.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:rflutter_alert/rflutter_alert.dart';
+
+class NewDemandePage extends StatefulWidget {
+  @override
+  _NewDemandePageState createState() => _NewDemandePageState();
+}
+
+class _NewDemandePageState extends State<NewDemandePage> {
+  int etape = 0;
+  List<Etape> etapesTitres = [
+    new Etape(
+        titre: "Choix de votre enfant",
+        description:
+            "Sélectionner votre enfant pour lequel vous souhaitez la demande"),
+    new Etape(
+        titre: "Type de demande",
+        description: "Sélectionner le type de demande que vous souhaitez"),
+    new Etape(
+        titre: "Récapitulatif",
+        description: "Vérifier votre demande avant validation")
+  ];
+
+  DemandesBloc _bloc = serviceLocator.get<DemandesBloc>();
+  bool _loading = false;
+
+  @override
+  void initState() {
+    _bloc.add(NewDemandeEvent());
+    serviceLocator.get<DemandeTypeBloc>().getDemandeTypes();
+    super.initState();
   }
 
-  cancel() {
-    _currentStep > 0 ? setState(() => _currentStep -= 1) : null;
+  toggleLoading() {
+    setState(() {
+      _loading = !_loading;
+    });
   }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        backgroundColor: GlobalTheme.primaryColor,
+        title: Text("Nouvelle demande"),
+        elevation: 0,
+        bottom: PreferredSize(
+          preferredSize: Size.fromHeight(70),
+          child: Container(
+            padding: EdgeInsets.symmetric(horizontal: 8),
+            height: 70,
+            width: MediaQuery.of(context).size.width,
+            color: GlobalTheme.greyColor,
+            child: Row(
+              children: [
+                Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(50),
+                  ),
+                  height: 50,
+                  width: 50,
+                  child: Center(child: Text("${etape + 1} / 3")),
+                ),
+                Container(
+                  width: MediaQuery.of(context).size.width * .80,
+                  padding: EdgeInsets.only(left: 8),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        etapesTitres[etape].titre!,
+                        style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: GlobalTheme.secondaryColor),
+                      ),
+                      Text(etapesTitres[etape].description!)
+                    ],
+                  ),
+                )
+              ],
+            ),
+          ),
+        ),
+      ),
+      body: SingleChildScrollView(
+        child: Container(
+          child: BlocBuilder(
+            bloc: _bloc,
+            builder: (context, state) {
+              if (state is NewDemandeStep1State) {
+                return Container(
+                  width: MediaQuery.of(context).size.width,
+                  height: MediaQuery.of(context).size.height,
+                  padding: EdgeInsets.all(30),
+                  child: Container(
+                    child: ListView.builder(
+                      itemBuilder: (context, index) {
+                        return InkWell(
+                          onTap: () {
+                            setState(() {
+                              this.etape++;
+                            });
+
+                            _bloc.add(
+                              NewDemandeStep2Event(
+                                  student: state.parentDTO!.students![index]),
+                            );
+                          },
+                          child: Container(
+                            padding: EdgeInsets.all(20),
+                            margin: EdgeInsets.only(bottom: 30),
+                            decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(10),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.grey.withOpacity(.1),
+                                    spreadRadius: 3,
+                                    blurRadius: 2,
+                                    offset: Offset(
+                                      0,
+                                      1,
+                                    ), // changes position of shadow
+                                  ),
+                                ]),
+                            child: Row(
+                              children: [
+                                Container(
+                                  margin: EdgeInsets.only(right: 10),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    borderRadius: BorderRadius.circular(50),
+                                  ),
+                                  height: 50,
+                                  width: 50,
+                                  child:
+                                      state.parentDTO!.students![index].photo !=
+                                              null
+                                          ? Image.memory(state.parentDTO!
+                                              .students![index].image!)
+                                          : Image.asset(
+                                              "assets/icons/man.png",
+                                            ),
+                                ),
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      state.parentDTO!.students![index]
+                                              .firstName! +
+                                          " " +
+                                          state.parentDTO!.students![index]
+                                              .lastName!,
+                                      style: TextStyle(
+                                          fontWeight: FontWeight.bold),
+                                    ),
+                                    Text("CM1 A")
+
+                                    /*state.parentDTO!.students![index]
+                                        .basicRegistrations!
+                                        .where((element) =>
+                                    element.schoolYear ==
+                                        utils.getSchoolYear())
+                                        .toList()[0]
+                                        .className!*/
+                                  ],
+                                )
+                              ],
+                            ),
+                          ),
+                        );
+                      },
+                      itemCount: state.parentDTO!.students!.length,
+                    ),
+                  ),
+                );
+              } else if (state is NewDemandeStep2State) {
+                return Container(
+                    width: MediaQuery.of(context).size.width,
+                    padding: EdgeInsets.all(30),
+                    child: InkWell(
+                      onTap: () {
+                        setState(() {
+                          this.etape++;
+                          
+                        });
+                        _bloc.add(
+                          NewDemandeStep3Event(
+                              demandeType: state.demandeType),
+                        );
+                        
+                      },
+                      child: Container(
+                          child: FutureBuilder(
+                        future: EcoletiProvider.getDemandesTypex(),
+                        builder: (context,
+                            AsyncSnapshot<List<dynamic>> snapshot) {
+                          print("xxxx");
+                          print(snapshot);
+                          switch (snapshot.connectionState) {
+                            default:
+                              if (snapshot.hasData &&
+                                  snapshot.data!.length > 0) {
+                                return Column(
+                                  children: [
+                                    Container(
+                                      height:
+                                          MediaQuery.of(context).size.height *
+                                              .40,
+                                      child: ListView.builder(
+                                          itemCount: snapshot.data!.length,
+                                          itemBuilder: (context, index) {
+                                            print(snapshot.data![index].demandeTypeName);
+                                            return Container(
+                                              padding: EdgeInsets.all(20),
+                                              margin:
+                                                  EdgeInsets.only(bottom: 30),
+                                              decoration: BoxDecoration(
+                                                  color: Colors.white,
+                                                  borderRadius:
+                                                      BorderRadius.circular(10),
+                                                  boxShadow: [
+                                                    BoxShadow(
+                                                      color: Colors.grey
+                                                          .withOpacity(.1),
+                                                      spreadRadius: 3,
+                                                      blurRadius: 2,
+                                                      offset: Offset(
+                                                        0,
+                                                        1,
+                                                      ), // changes position of shadow
+                                                    ),
+                                                  ]),
+                                              child: Text(snapshot.data![index].demandeTypeName),
+                                            );
+                                          }),
+                                    ),
+                                  ],
+                                );
+                              } else if (snapshot.hasError) {
+                                return Center(
+                                  child: Text(
+                                      "Une erreur est survenue. Veuillez réessayer"),
+                                );
+                              } else {
+                                return Center(
+                                  child: CircularProgressIndicator(),
+                                );
+                              }
+                          }
+                        },
+                      )),
+                    ));
+              } else if (state is NewDemandeStep3State) {
+                return Container(
+                     width: MediaQuery.of(context).size.width,
+                    padding: EdgeInsets.all(30),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Container(
+                          child: Text("Enfant:"),
+                          padding: EdgeInsets.only(bottom: 10),
+                        ),
+                        Container(
+                          padding: EdgeInsets.all(20),
+                          margin: EdgeInsets.only(bottom: 30),
+                          decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(10),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.grey.withOpacity(.1),
+                                  spreadRadius: 3,
+                                  blurRadius: 2,
+                                  offset: Offset(
+                                    0,
+                                    1,
+                                  ), // changes position of shadow
+                                ),
+                              ]),
+                          child: Row(
+                            children: [
+                              Expanded(
+                                child: Text(
+                                    state.student!.firstName! +
+                                        " " +
+                                        state.student!.lastName!,
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 16,
+                                    )),
+                              ),
+                              IconButton(
+                                  onPressed: () {
+                                    setState(() {
+                                      etape = 0;
+                                    });
+                                    _bloc.add(NewDemandeEvent());
+                                  },
+                                  icon: Icon(Icons.edit))
+                            ],
+                          ),
+                        ),
+                        Container(
+                          child: Text("Type:"),
+                          padding: EdgeInsets.only(bottom: 10),
+                        ),
+                        Container(
+                          padding: EdgeInsets.all(20),
+                          margin: EdgeInsets.only(bottom: 30),
+                          decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(10),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.grey.withOpacity(.1),
+                                  spreadRadius: 3,
+                                  blurRadius: 2,
+                                  offset: Offset(
+                                    0,
+                                    1,
+                                  ), // changes position of shadow
+                                ),
+                              ]),
+                          child: Row(
+                            children: [
+                              Expanded(
+                                child: Text("a",
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 16,
+                                  ),
+                                ),
+                              ),
+                              IconButton(
+                                onPressed: () {
+                                  setState(() {
+                                    etape = 1;
+                                  });
+                                  _bloc.add(NewDemandeStep2Event(
+                                      student: state.student));
+                                },
+                                icon: Icon(Icons.edit),
+                              )
+                            ],
+                          ),
+                        ),
+                        Container(
+                          child: ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              primary: GlobalTheme.secondaryColor,
+                              padding: EdgeInsets.all(0),
+                              fixedSize:
+                                  Size(MediaQuery.of(context).size.width, 45),
+                            ),
+                            onPressed: () {
+                              submitDemande(
+                                context,
+                                Demande(
+                                    student: state.student,
+                                    type: state.demandeType,
+                                    schoolYear: utils.getSchoolYear(),
+                                    parent: state.parentDTO!.parent),
+                              );
+                            },
+                            child: _loading
+                                ? Container(
+                                    height: 20,
+                                    width: 20,
+                                    child: CircularProgressIndicator(
+                                      color: Colors.white,
+                                    ),
+                                  )
+                                : Text("Valider"),
+                          ),
+                        )
+                      ],
+                    ) 
+                    );
+              }
+              return Container(
+                  child: Center(
+                child: CircularProgressIndicator(),
+              ));
+            },
+          ),
+        ),
+      ),
+    );
+  }
+
+  void submitDemande(BuildContext context, Demande demande) async {
+    try {
+      toggleLoading();
+      demande = await serviceLocator.get<EcoletiProvider>().addDemande(demande);
+      toggleLoading();
+      Alert(
+        context: context,
+        title: "Succès",
+        desc:
+            "Votre demande a bien été enregistrée. Elle sera traitée dans les meilleurs délais. Merci.",
+        type: AlertType.none,
+        buttons: [
+          DialogButton(
+            child: Text(
+              "Ok",
+              style: TextStyle(color: Colors.white, fontSize: 15),
+            ),
+            onPressed: () {
+              Navigator.pop(context);
+              Navigator.pop(context);
+            },
+            width: 120,
+          )
+        ],
+      ).show();
+    } on Exception catch (e) {
+      toggleLoading();
+      Alert(
+        context: context,
+        title: "Echec",
+        desc: "Une erreur s'est produite.",
+        type: AlertType.error,
+        buttons: [
+          DialogButton(
+            child: Text(
+              "Fermer",
+              style: TextStyle(color: Colors.white, fontSize: 15),
+            ),
+            onPressed: () => Navigator.pop(context),
+            width: 120,
+          )
+        ],
+      ).show();
+    }
+  }
+}
+
+class Etape {
+  String? titre;
+  String? description;
+
+  Etape({this.titre, this.description});
 }
