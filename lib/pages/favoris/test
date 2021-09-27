@@ -1,3 +1,53 @@
+import 'package:ecoleti/models/demandeEnums.dart';
+import 'package:ecoleti/models/demandeType.dart';
+import 'package:ecoleti/models/parent.dart';
+import 'package:ecoleti/models/parentDTO.dart';
+import 'package:ecoleti/models/student.dart';
+import 'package:enum_to_string/enum_to_string.dart';
+
+class Demande {
+  int? id;
+  DemandeStatus? status;
+  DemandeType? type;
+  int? schoolYear;
+  Student? student;
+  ParentDTO? parent;
+  Demande(
+      {this.id,
+      this.status,
+      this.student,
+      this.type,
+      this.schoolYear,
+      this.parent});
+
+  Demande.fromJson(Map<String, dynamic> json) {
+    status = json['status'] != null
+        ? EnumToString.fromString(DemandeStatus.values, json['status'])
+        : null;
+    id = json['id'];
+    type = json['type'] != null ? DemandeType.fromJson(json['type']) : null;
+    student = json['student'] != null ? Student.fromJson(json['student']) : null;
+    schoolYear = json['schoolYear'];
+    parent = json['parent'];
+  }
+
+  Map<String, dynamic> toJson() {
+    final Map<String, dynamic> data = new Map<String, dynamic>();
+    
+    if (null != this.type){
+      data['type'] = this.type!.toJson();
+    }
+    if (null != this.student) {
+      data['student'] = this.student!.toJson();
+    }
+    if (null != this.parent) {
+      data['parent'] = this.parent!.toJson();
+    }
+    return data;
+  }
+}
+
+---
 import 'package:ecoleti/blocs/demandesBloc.dart';
 import 'package:ecoleti/events/demandesEvents.dart';
 import 'package:ecoleti/locators/serviceLocator.dart';
