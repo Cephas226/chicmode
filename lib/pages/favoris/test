@@ -1,56 +1,52 @@
+import 'package:dio/dio.dart';
 import 'package:ecoleti/locators/serviceLocator.dart';
-import 'package:ecoleti/models/demande.dart';
-import 'package:ecoleti/models/notice.dart';
-import 'package:ecoleti/models/parentDTO.dart';
-import 'package:ecoleti/models/post.dart';
-import 'package:ecoleti/pages/posts/posts_provider.dart';
-import 'package:ecoleti/providers/ecoletiProvider.dart';
-import 'package:get/get.dart';
+import 'package:ecoleti/models/authenticationResponse.dart';
+import 'package:ecoleti/providers/authenticationProvider.dart';
+import 'package:flutter/foundation.dart';
 
-class PostsController extends GetxController {
-  RxList<Demande> postsList = <Demande>[].obs;
-  RxList<Notice> noticeList = <Notice>[].obs;
-  ParentDTO? parentDTO;
-  var isLoading = true.obs;
-  @override
-  void onInit() {
-    initPost();
-    initNotice();
-    super.onInit();
+class ApiRequest {
+  final String url;
+  final Map<String, dynamic> data;
+  Dio dio = Dio();
+  ApiRequest({
+    required this.url,
+    required this.data,
+  });
+
+  _dio() async {
+    // Put your authorization token here
+    AuthenticationResponse response = await serviceLocator
+        .get<AuthenticationProvider>()
+        .loadAuthenticationResponse();
+    print(response.accessToken);
+    Map<String, String> header = <String, String>{
+      'Authorization': 'Bearer ' + response.accessToken.toString(),
+      'Content-Type': 'application/json'
+    };
+    return dio.options.headers = header;
+
+    // return Dio(BaseOptions(
+    //   headers: {
+    //   'Authorization': 'Bearer ' + response.accessToken.toString(),
+    //   'Content-Type' : 'application/json'
+    // }));
   }
 
-  initPost() {
-    PostsProvider.getPostsList(
-      onSuccess: (posts) {
-        postsList.addAll(posts);
-        isLoading(false);
-        update();
-      },
-      onError: (error) {
-        isLoading(false);
-        update();
-        print("Error");
-      },
-    );
-  }
-
-  initNotice() async {
-    parentDTO = await serviceLocator.get<EcoletiProvider>().loadParentDTO();
-    parentDTO!.students!.forEach((e) => {
-          print(e.id),
-          PostsProvider.getPostsNotice(
-            StudentId: e.id,
-            onSuccess: (notice) {
-              noticeList.addAll(notice);
-              isLoading(false);
-              update();
-            },
-            onError: (error) {
-              isLoading(false);
-              update();
-              print("Error");
-            },
-          )
-        });
+  Future<void> get({
+    Function()? beforeSend,
+    required Function(dynamic data) onSuccess,
+    Function(dynamic error)? onError,
+  }) async {
+    AuthenticationResponse response = await serviceLocator
+        .get<AuthenticationProvider>()
+        .loadAuthenticationResponse();
+    await Dio(BaseOptions(headers: {
+      "Content-Type": "application/json",
+      'Authorization': 'Bearer ' + response.accessToken.toString()
+    })).get(this.url, queryParameters: this.data).then((res) {
+      if (onSuccess != null) onSuccess(res.data);
+    }).catchError((error) {
+      if (onError != null) onError(error);
+    });
   }
 }
