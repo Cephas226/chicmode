@@ -1,64 +1,577 @@
- 
+// import 'dart:convert';
+// import 'package:ecoleti/blocs/noticeBloc.dart';
+// import 'package:ecoleti/events/notificationEvent.dart';
+// import 'package:ecoleti/locators/serviceLocator.dart';
+// import 'package:ecoleti/models/notice.dart';
+// import 'package:ecoleti/models/student.dart';
+// import 'package:ecoleti/states/noticeState.dart';
+// import 'package:ecoleti/themes/globalTheme.dart';
+// import 'package:ecoleti/uis/received_message_screen.dart';
+// import 'package:ecoleti/utils/utils.dart';
+// import 'package:flutter/material.dart';
+// import 'package:flutter_bloc/flutter_bloc.dart';
+
+// class NoticerPage extends StatefulWidget {
+//   Student? selectedStudent;
+//   NoticerPage({@required this.selectedStudent});
+
+//   @override
+//   _NoticerPageState createState() => _NoticerPageState();
+// }
+
+// class _NoticerPageState extends State<NoticerPage> {
+//   NoticeBloc? _bloc;
+//   @override
+//   void initState() {
+//     _bloc = serviceLocator.get<NoticeBloc>()
+//       ..add(NoticeStartedEvent());
+//     super.initState();
+//   } 
+
+//   @override
+//   Widget build(BuildContext context) {
+//     return Scaffold(
+//       appBar: AppBar(backgroundColor: GlobalTheme.primaryColor,title: Text("Notice")),
+//       body: Container(
+//           width: MediaQuery.of(context).size.width,
+//           child: BlocBuilder(
+//             bloc: _bloc,
+//             builder: (context, state) {
+//               if (state is NoticeRetardLoadedState) {
+              
+//                 return CustomScrollView(
+//                   slivers: [
+//                     SliverFillRemaining(
+//                       child: 
+//                       Container(
+//                     padding: EdgeInsets.all(30),
+//                     child: StreamBuilder(
+//                       stream:
+//                           serviceLocator.get<NoticeBloc>().noticeOfStudent,
+//                       builder:
+//                           (context, AsyncSnapshot<List<Notice>> snapshot) {
+//                         print(snapshot.data);
+//                         if (snapshot.hasData && snapshot.data!.length > 0) {
+//                           return Column(
+//                             children: [
+//                               Container(
+//                                 height:
+//                                     MediaQuery.of(context).size.height * .40,
+//                                 child: ListView.builder(
+//                                     itemCount: snapshot.data!.length,
+//                                     itemBuilder: (context, index) {
+//                                       return  Column(
+//                                 children: [
+//                                   Container(
+//                                     child: Padding(
+//                                         padding: EdgeInsets.all(10),
+//                                         child: Center(
+//                                           child: Text(utils.formatter.format(
+//                                               (snapshot.data![index]
+//                                                   .creationDate!))),
+//                                         )),
+//                                   ),
+//                                   Container(
+//                                     child: Padding(
+//                                         padding: EdgeInsets.all(0),
+//                                         child: Center(
+//                                           child: Text(
+//                                             utf8.decode((snapshot
+//                                           .data![index]
+//                                           .title!
+//                                           .codeUnits)),style: TextStyle(fontWeight: FontWeight.bold),),
+//                                         )),
+//                                   ),
+//                                   ReceivedMessageScreen(
+//                                       message: utf8.decode((snapshot
+//                                           .data![index]
+//                                           .description!
+//                                           .codeUnits)))
+//                                 ],
+//                               );
+                                       
+//                                     }),
+//                               ),
+//                             ],
+//                           );
+//                         } else if (snapshot.hasData &&
+//                             snapshot.data!.length == 0) {
+//                           return Center(
+//                             child: Text(
+//                                 "Vous n'avez aucune notice"),
+//                           );
+//                         } else if (snapshot.hasError) {
+//                           return Center(
+//                             child: Text(
+//                                 "Une erreur est survenue. Veuillez réessayer"),
+//                           );
+//                         } else {
+//                           return Center(
+//                             child: CircularProgressIndicator(),
+//                           );
+//                         }
+//                       },
+//                     )),
+//                     //   StreamBuilder(
+//                     //   stream:_bloc!.noticeOfStudent,
+//                     //   builder:
+//                     //       (context,  AsyncSnapshot<List<Notice>> snapshot) {
+//                     //     if (snapshot.hasData) {
+//                     //     var  data=snapshot.data;
+//                     //       return Column(
+//                     //         children: [
+//                     //           Container(
+//                     //             height:
+//                     //                 MediaQuery.of(context).size.height * .40,
+//                     //             child: ListView.builder(
+//                     //                 itemCount: data!.length,
+//                     //                 itemBuilder: (context, index) {
+//                     //                   return Column(
+//                     //             children: [
+//                     //               Container(
+//                     //                 child: Padding(
+//                     //                     padding: EdgeInsets.all(10),
+//                     //                     child: Center(
+//                     //                       child: Text(utils.formatter.format(
+//                     //                           (data[index]
+//                     //                               .creationDate!))),
+//                     //                     )),
+//                     //               ),
+//                     //               Container(
+//                     //                 child: Padding(
+//                     //                     padding: EdgeInsets.all(0),
+//                     //                     child: Center(
+//                     //                       child: Text(
+//                     //                         utf8.decode((data[index]
+//                     //                       .title!
+//                     //                       .codeUnits)),style: TextStyle(fontWeight: FontWeight.bold),),
+//                     //                     )),
+//                     //               ),
+//                     //               ReceivedMessageScreen(
+//                     //                   message: utf8.decode((data[index].description!
+//                     //                       .codeUnits)))
+//                     //             ],
+//                     //           );
+//                     //                 }),
+//                     //           ),
+//                     //         ],
+//                     //       );
+//                     //     } else if (snapshot.hasError) {
+//                     //       return Center(
+//                     //         child: Text(
+//                     //             "Une erreur est survenue. Veuillez réessayer"),
+//                     //       );
+//                     //     } else {
+//                     //       return Center(
+//                     //         child: CircularProgressIndicator(),
+//                     //       );
+//                     //     }
+//                     //   },
+//                     // ))
+//                     //   // StreamBuilder(
+//                       //   stream: _bloc!.noticeOfStudent,
+//                       //   builder: (context,
+//                       //       AsyncSnapshot<List<Notice>> snapshot) {
+//                       //     switch (snapshot.connectionState) {
+//                       //       case ConnectionState.waiting:
+//                       //         return Center(
+//                       //           child: CircularProgressIndicator(),
+//                       //         );
+//                       //         case ConnectionState.done{
+//                       //           return ListView.builder(
+//                       //                 padding: EdgeInsets.symmetric(
+//                       //                     vertical: 0, horizontal: 8),
+//                       //                 itemCount: snapshot.data!.length,
+//                       //                 itemBuilder: (context, index) {
+
+//                       //                 print(snapshot.data![index]);
+//                       //                   return 
+//                       //                   Column(
+//                       //           children: [
+//                       //             Container(
+//                       //               child: Padding(
+//                       //                   padding: EdgeInsets.all(10),
+//                       //                   child: Center(
+//                       //                     child: Text(utils.formatter.format(
+//                       //                         (snapshot.data![index]
+//                       //                             .creationDate!))),
+//                       //                   )),
+//                       //             ),
+//                       //             Container(
+//                       //               child: Padding(
+//                       //                   padding: EdgeInsets.all(0),
+//                       //                   child: Center(
+//                       //                     child: Text(
+//                       //                       utf8.decode((snapshot
+//                       //                     .data![index]
+//                       //                     .title!
+//                       //                     .codeUnits)),style: TextStyle(fontWeight: FontWeight.bold),),
+//                       //                   )),
+//                       //             ),
+//                       //             ReceivedMessageScreen(
+//                       //                 message: utf8.decode((snapshot
+//                       //                     .data![index]
+//                       //                     .description!
+//                       //                     .codeUnits)))
+//                       //           ],
+//                       //         );
+//                       //                 });
+//                       //         }
+//                       //       default:
+//                       //         if (!snapshot.hasError) {
+//                       //           if (snapshot.hasData) {
+//                       //             return ListView.builder(
+//                       //                 padding: EdgeInsets.symmetric(
+//                       //                     vertical: 0, horizontal: 8),
+//                       //                 itemCount: snapshot.data!.length,
+//                       //                 itemBuilder: (context, index) {
+
+//                       //                 print(snapshot.data![index]);
+//                       //                   return 
+//                       //                   Column(
+//                       //           children: [
+//                       //             Container(
+//                       //               child: Padding(
+//                       //                   padding: EdgeInsets.all(10),
+//                       //                   child: Center(
+//                       //                     child: Text(utils.formatter.format(
+//                       //                         (snapshot.data![index]
+//                       //                             .creationDate!))),
+//                       //                   )),
+//                       //             ),
+//                       //             Container(
+//                       //               child: Padding(
+//                       //                   padding: EdgeInsets.all(0),
+//                       //                   child: Center(
+//                       //                     child: Text(
+//                       //                       utf8.decode((snapshot
+//                       //                     .data![index]
+//                       //                     .title!
+//                       //                     .codeUnits)),style: TextStyle(fontWeight: FontWeight.bold),),
+//                       //                   )),
+//                       //             ),
+//                       //             ReceivedMessageScreen(
+//                       //                 message: utf8.decode((snapshot
+//                       //                     .data![index]
+//                       //                     .description!
+//                       //                     .codeUnits)))
+//                       //           ],
+//                       //         );
+//                       //                 });
+//                       //           } else if (snapshot.hasData &&
+//                       //               snapshot.data != null &&
+//                       //               snapshot.data!.length == 0) {
+//                       //             return Container(
+//                       //               //color: Colors.yellow,
+//                       //               child: Center(
+//                       //                 child: Text("Aucune notice."),
+//                       //               ),
+//                       //             );
+//                       //           } else {
+//                       //             return Container(
+//                       //                 child: Center(
+//                       //               child: CircularProgressIndicator(),
+//                       //             ));
+//                       //           }
+//                       //         } else {
+//                       //           return Container(
+//                       //             child: Center(
+//                       //               child: Text("Une erreur est survenue."),
+//                       //             ),
+//                       //           );
+//                       //         }
+//                       //         break;
+//                       //     }
+//                       //   },
+//                       // ),
+//                     )
+//                   ],
+//                 );
+//               } else {
+//                 return Center(
+//                   child: CircularProgressIndicator(),
+//                 );
+//               }
+//             },
+//           )),
+//     );
+//   }
+
+// }
+
+
 import 'dart:convert';
 
-import 'package:ecoleti/environments/constants.dart';
-import 'package:ecoleti/interceptors/tokenInterceptor.dart';
-import 'package:ecoleti/library/api_request.dart';
-import 'package:ecoleti/models/demande.dart';
+import 'package:ecoleti/blocs/notesBloc.dart';
+import 'package:ecoleti/blocs/noticeBloc.dart';
+import 'package:ecoleti/events/notesEvents.dart';
+import 'package:ecoleti/events/notice.dart';
+import 'package:ecoleti/locators/serviceLocator.dart';
+import 'package:ecoleti/models/note.dart';
 import 'package:ecoleti/models/notice.dart';
-import 'package:ecoleti/models/post.dart';
-import 'package:ecoleti/models/todo.dart';
-import 'package:http/http.dart' as http;
-import 'package:http/http.dart';
-import 'package:http_interceptor/http_interceptor.dart';
-class PostsProvider {
-    static var client = http.Client();
-    static  Client _clientWithInterceptor = InterceptedClient.build(interceptors: [
-    TokenInterceptor(),
-  ]);
-  static getPostsList({
-    Function()? beforeSend,
-    Function(List<Demande> posts)? onSuccess,
-    Function(dynamic error) ?onError,
-  }) {
-    ApiRequest(url: '${Constants.ecoletiApiUrl}parent-request/parent/390', data: {}).get(
-      beforeSend: () => {if (beforeSend != null) beforeSend()},
-      onSuccess: (data) {
-        onSuccess!((data as List).map((postJson) => Demande.fromJson(postJson)).toList());
-      },
-      onError: (error) => {if (onError != null) onError(error)},
+import 'package:ecoleti/models/student.dart';
+import 'package:ecoleti/pages/notesPage.dart';
+import 'package:ecoleti/states/notesStates.dart';
+import 'package:ecoleti/states/noticeState.dart';
+import 'package:ecoleti/themes/globalTheme.dart';
+import 'package:ecoleti/uis/received_message_screen.dart';
+import 'package:ecoleti/utils/utils.dart';
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+
+
+
+class NoticerPage extends StatefulWidget {
+  Student? selectedStudent;
+  NoticerPage({this.selectedStudent});
+
+  @override
+  _NoticerPageState createState() => _NoticerPageState();
+}
+
+class _NoticerPageState extends State<NoticerPage> {
+ 
+  NoticeBloc? _bloc;
+ int ?selectStudentId;
+
+        _switchStudent(Student student) {
+    // if (student.id!=null) {
+    //   _bloc!.add(
+    //     NoticeStartedEvent(
+    //       studentId: student.id,
+    //     ),
+    //   );
+      setState(() {
+        widget.selectedStudent = student;
+        this.selectStudentId=student.id;
+      });
+    // }
+    print(student.toJson()["id"]);
+  }
+ @override
+  void initState() {
+    _bloc = serviceLocator.get<NoticeBloc>()
+      ..add(NoticeStartedEvent());
+    super.initState();
+  } 
+  @override
+  Widget build(BuildContext context) {
+    
+    return Scaffold(
+      body: Container(
+        width: MediaQuery.of(context).size.width,
+        child: BlocBuilder(
+          bloc: _bloc,
+          builder: (context, state) {
+            if (state is NoticeRetardLoadedState) {
+              return CustomScrollView(
+                slivers: [
+                  SliverAppBar(
+                    centerTitle: false,
+                    elevation: 0,
+                    pinned: true,
+                    title: Container(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            "${widget.selectedStudent!.firstName}",
+                            style: TextStyle(fontSize: 13),
+                          ),
+                          Text(
+                            "Notice",
+                            style: TextStyle(fontSize: 11),
+                          ),
+                        ],
+                      ),
+                    ),
+                    backgroundColor: GlobalTheme.primaryColor,
+                    bottom: PreferredSize(
+                      preferredSize: Size.fromHeight(kToolbarHeight + 130),
+                      child: Column(
+                        children: [
+                          Container(
+                            height: 90,
+                            width: MediaQuery.of(context).size.width,
+                            color: GlobalTheme.greyColor,
+                            //padding: EdgeInsets.symmetric(vertical: 8),
+                            child: GridView.builder(
+                              itemCount: state.parentDTO!.students!.length,
+                              gridDelegate:
+                                  SliverGridDelegateWithFixedCrossAxisCount(
+                                crossAxisCount: 1,
+                                mainAxisSpacing: 8,
+                                crossAxisSpacing: 8,
+                              ),
+                              itemBuilder: (context, index) {
+                                return InkWell(
+                                  onTap: () => _switchStudent(
+                                      state.parentDTO!.students![index]),
+                                  child: Container(
+                                    width: 200,
+                                    height: 90,
+                                    child: 
+                                    Column(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        Container(
+                                          height: 70,
+                                          width: 70,
+                                          child: ClipRRect(
+                                            borderRadius:
+                                                BorderRadius.circular(70),
+                                            child: state
+                                                        .parentDTO!
+                                                        .students![index]
+                                                        .photo !=
+                                                    null
+                                                ? Image.memory(
+                                                    state
+                                                        .parentDTO!
+                                                        .students![index]
+                                                        .image!,
+                                                  )
+                                                : Image.asset(
+                                                    "assets/icons/man.png",
+                                                  ),
+                                          ),
+                                          decoration: BoxDecoration(
+                                              border: Border.all(
+                                                color: widget.selectedStudent!
+                                                            .id ==
+                                                        state.parentDTO!
+                                                            .students![index].id
+                                                    ? GlobalTheme.secondaryColor
+                                                    : GlobalTheme.silverColor,
+                                                width: 1,
+                                              ),
+                                              borderRadius:
+                                                  BorderRadius.circular(50),
+                                              color: Colors.white),
+                                        ),
+                                        Container(
+                                          child: Text(
+                                            "${state.parentDTO!.students![index].firstName}",
+                                            style: state.parentDTO!
+                                                        .students![index].id ==
+                                                    widget.selectedStudent!.id
+                                                ? GlobalTheme
+                                                    .selectedChildNameTextStyle
+                                                : null,
+                                            overflow: TextOverflow.ellipsis,
+                                            maxLines: 1,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                );
+                              },
+                              scrollDirection: Axis.horizontal,
+                            ),
+                          ),
+                          Container(
+                            width: MediaQuery.of(context).size.width,
+                            height: kToolbarHeight,
+                            color: GlobalTheme.greyColor,
+                            padding: EdgeInsets.symmetric(horizontal: 8),                            
+                          ),
+                       
+                        ],
+                      ),
+                    ),
+                  ),
+                  SliverFillRemaining(
+                    child:  NoticeList(studentId: widget.selectedStudent!.id),
+                  )
+                ],
+              );
+            } else {
+              return Center(
+                child: CircularProgressIndicator(),
+              );
+            }
+          },
+        ),
+      ),
     );
   }
+}
 
-   static getPostsNotice({
-    Function()? beforeSend,
-    int? StudentId,
-    Function(List<Notice> posts)? onSuccess,
-    Function(dynamic error) ?onError,
-  }) {
-    ApiRequest(url: '${Constants.ecoletiApiUrl}notice/student/$StudentId/2021', data: {}).get(
-      beforeSend: () => {if (beforeSend != null) beforeSend()},
-      onSuccess: (data) {
-        onSuccess!((data as List).map((postJson) => Notice.fromJson(postJson)).toList());
-      },
-      onError: (error) => {if (onError != null) onError(error)},
-    );
-  }
-
-
-   static Future<List<Demande>?> getTodo() async {
-  try {
-      Response _response = await _clientWithInterceptor.get(Uri.parse(
-          "${Constants.ecoletiApiUrl}parent-request/parent/390"));
-      if (_response.statusCode == 200) {
-        print( jsonDecode(_response.body));
-        List jsonResponse = jsonDecode(_response.body);
-        return jsonResponse.map((e) => new Demande.fromJson(e)).toList();
-      } else {
-        throw Exception();
-      }
-    } on Exception catch (e) {
-      print(e);
-      throw e;
-    }
-  }}
+class NoticeList extends StatelessWidget {
+  int? studentId;
+  NoticeList({this.studentId});
+  @override
+  Widget build(BuildContext context) {
+    serviceLocator.get<NoticeBloc>().fetchNoticeOfStudent(studentId);
+    return Container(
+      child:  StreamBuilder(
+                      stream:
+                          serviceLocator.get<NoticeBloc>().noticeOfStudent,
+                      builder:
+                          (context, AsyncSnapshot<List<Notice>> snapshot) {
+                        print(snapshot.data);
+                        if (snapshot.hasData && snapshot.data!.length > 0) {
+                          return Column(
+                            children: [
+                              Container(
+                                height:
+                                    MediaQuery.of(context).size.height * .40,
+                                child: ListView.builder(
+                                    itemCount: snapshot.data!.length,
+                                    itemBuilder: (context, index) {
+                                      return  Column(
+                                children: [
+                                  Container(
+                                    child: Padding(
+                                        padding: EdgeInsets.all(10),
+                                        child: Center(
+                                          child: Text(utils.formatter.format(
+                                              (snapshot.data![index]
+                                                  .creationDate!))),
+                                        )),
+                                  ),
+                                  Container(
+                                    child: Padding(
+                                        padding: EdgeInsets.all(0),
+                                        child: Center(
+                                          child: Text(
+                                            utf8.decode((snapshot
+                                          .data![index]
+                                          .title!
+                                          .codeUnits)),style: TextStyle(fontWeight: FontWeight.bold),),
+                                        )),
+                                  ),
+                                  ReceivedMessageScreen(
+                                      message: utf8.decode((snapshot
+                                          .data![index]
+                                          .description!
+                                          .codeUnits)))
+                                ],
+                              );
+                                       
+                                    }),
+                              ),
+                            ],
+                          );
+                        } else if (snapshot.hasData &&
+                            snapshot.data!.length == 0) {
+                          return Center(
+                            child: Text(
+                                "Vous n'avez aucune notice"),
+                          );
+                        } else if (snapshot.hasError) {
+                          return Center(
+                            child: Text(
+                                "Une erreur est survenue. Veuillez réessayer"),
+                          );
+                        } else {
+                          return Center(
+                            child: CircularProgressIndicator(),
+                          );
+                        }
+                      },
+                    ));
+}}
