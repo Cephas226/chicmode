@@ -1,1 +1,52 @@
 
+import 'package:ecoleti/locators/serviceLocator.dart';
+import 'package:ecoleti/models/demande.dart';
+import 'package:ecoleti/models/notice.dart';
+import 'package:ecoleti/models/parentDTO.dart';
+ 
+import 'package:ecoleti/providers/ecoletiProvider.dart';
+import 'package:get/get.dart';
+
+class NoticeController extends GetxController with StateMixin<List<dynamic>> {
+  RxList<Demande> postsList = <Demande>[].obs;
+  RxList noticeList = [].obs;
+  var tempoList=[].obs;
+  ParentDTO? parentDTO;
+  var isLoading = true.obs;
+  @override
+  void onInit() async{
+ 
+ 
+    initNotice();
+    EcoletiProvider.loadNotice(550);
+       print("init me"); 
+         super.onInit();
+  }
+  @override
+  void onClose() {
+    initNotice();
+    super.onClose();
+  }
+
+ 
+  initNotice() async {
+    parentDTO = await serviceLocator.get<EcoletiProvider>().loadParentDTO();
+    parentDTO!.students!.forEach((e) => {
+          print(e.id),
+          EcoletiProvider.getPostsNotice(
+            studentId: e.id,
+            onSuccess: (notice) {
+              noticeList.addAll(notice); 
+              tempoList.addAll({e.firstName,e.lastName,e.photo,notice});
+              isLoading(false);
+              update();
+            },
+            onError: (error) {
+              isLoading(false);
+              update();
+              print("Error");
+            },
+          )
+        });
+  }
+}
