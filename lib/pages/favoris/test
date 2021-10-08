@@ -1,51 +1,205 @@
-import 'dart:convert';
-
-import 'package:ecoleti/pages/posts/posts_controller.dart';
-import 'package:ecoleti/uis/received_message_screen.dart';
+import 'package:ecoleti/themes/globalTheme.dart';
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
+import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:transparent_image/transparent_image.dart';
 
-class PostsPage extends StatelessWidget {
-  final PostsController _controller = Get.put(PostsController());
+class MediathequePage extends StatefulWidget {
+  @override
+  _MediathequePageState createState() => _MediathequePageState();
+}
+
+class _MediathequePageState extends State<MediathequePage> {
+  List<String> imageList = [
+    'https://cdn.pixabay.com/photo/2019/03/15/09/49/girl-4056684_960_720.jpg',
+    'https://cdn.pixabay.com/photo/2020/12/15/16/25/clock-5834193__340.jpg',
+    'https://cdn.pixabay.com/photo/2020/09/18/19/31/laptop-5582775_960_720.jpg',
+    'https://media.istockphoto.com/photos/woman-kayaking-in-fjord-in-norway-picture-id1059380230?b=1&k=6&m=1059380230&s=170667a&w=0&h=kA_A_XrhZJjw2bo5jIJ7089-VktFK0h0I4OWDqaac0c=',
+    'https://cdn.pixabay.com/photo/2019/11/05/00/53/cellular-4602489_960_720.jpg',
+    'https://cdn.pixabay.com/photo/2017/02/12/10/29/christmas-2059698_960_720.jpg',
+    'https://cdn.pixabay.com/photo/2020/01/29/17/09/snowboard-4803050_960_720.jpg',
+    'https://cdn.pixabay.com/photo/2020/02/06/20/01/university-library-4825366_960_720.jpg',
+    'https://cdn.pixabay.com/photo/2020/11/22/17/28/cat-5767334_960_720.jpg',
+    'https://cdn.pixabay.com/photo/2020/12/13/16/22/snow-5828736_960_720.jpg',
+    'https://cdn.pixabay.com/photo/2020/12/09/09/27/women-5816861_960_720.jpg',
+  ];
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return new Scaffold(
       appBar: AppBar(
-        title: Text('HomeScreen'),
+        backgroundColor: GlobalTheme.primaryColor,
+        title: Text("Actualités"),
       ),
-      body: Obx(() {
-        if (_controller.isLoading.value) {
-          return Center(
-            child: CircularProgressIndicator(),
-          );
-        }
-        return ListView.builder(
-          itemCount: _controller.noticeList.length,
-          itemBuilder: (context, index) {
-            print(_controller.noticeList[index].toJson());
-            return Column(
-              children: [
-                Container(
-                                    child: Padding(
-                                        padding: EdgeInsets.all(0),
-                                        child: Center(
-                                          child: Text(
-                                           utf8.decode((_controller.noticeList[index]
-                                          .title!
-                                          .codeUnits)),style: TextStyle(fontWeight: FontWeight.bold),),
-                                        )),
-                                  ),
-                Container(
-                  child: ReceivedMessageScreen(
-                                      message: utf8.decode((_controller.noticeList[index]
-                                          .description!
-                                          .codeUnits))),
-                )
-              ],
-            );
-          },
-        );
-      }),
+      body: Column(
+
+          children: [
+            Container(
+              padding: EdgeInsets.all(10),
+        child: Column(
+          children: <Widget>[
+            SizedBox(height: 5.0),
+            Align(
+              alignment: Alignment.centerLeft,
+              child: Container(
+                child: Text(
+                  "ExampleTitle",
+                  style: TextStyle(color: Colors.black, fontSize: 18.0),
+                ),
+              ),
+            ),
+            Align(
+              alignment: Alignment.centerLeft,
+              child: Container(
+                child: Text(
+                  "ExampleSubtitle",
+                  style: TextStyle(color: Colors.blueGrey, fontSize: 10.0),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+            Container(
+              padding: EdgeInsets.all(10),
+               height: 200,
+        width: 800, 
+        child: StaggeredGridView.countBuilder(
+          crossAxisCount: 4,
+          itemCount: 5,
+          itemBuilder: (BuildContext context, int index) => new Container(
+              color: Colors.green,
+              child: new Center(
+                child: new CircleAvatar(
+                  backgroundColor: Colors.white,
+                  child: new Text('$index'),
+                ),
+              )),
+           staggeredTileBuilder: (index) => StaggeredTile.count(
+          (index==0) ? 4: 1, (index>0) ? 1 : 1),
+      mainAxisSpacing: 8.0,
+      crossAxisSpacing: 8.0,
+        ),
+      )
+          ],
+        )
     );
   }
+
+  Widget captionText(String titleText, String subText) {
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: Container(
+        child: Column(
+          children: <Widget>[
+            SizedBox(height: 5.0),
+            Align(
+              alignment: Alignment.centerLeft,
+              child: Container(
+                child: Text(
+                  titleText,
+                  style: TextStyle(color: Colors.black, fontSize: 18.0),
+                ),
+              ),
+            ),
+            Align(
+              alignment: Alignment.centerLeft,
+              child: Container(
+                child: Text(
+                  subText,
+                  style: TextStyle(color: Colors.blueGrey, fontSize: 10.0),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget sliverGridWidget(BuildContext context) {
+    return StaggeredGridView.countBuilder(
+      padding: const EdgeInsets.all(1.0),
+      crossAxisCount: 4,
+      itemCount: 10, //staticData.length,
+      itemBuilder: (context, index) {
+        return Card(
+            elevation: 8.0,
+            child: InkWell(
+                child: Hero(
+                  tag: index, // staticData[index].images,
+                  child: new FadeInImage(
+                    width: MediaQuery.of(context).size.width,
+                    image: NetworkImage(
+                        "https://images.unsplash.com/photo-1468327768560-75b778cbb551?ixlib=rb-1.2.1&w=1000&q=80"), // NetworkImage(staticData[index].images),
+                    fit: BoxFit.cover,
+                    placeholder: AssetImage("assets/images/app_logo.png"),
+                  ),
+                ),
+                onTap: () {
+                  //
+                }));
+      },
+      staggeredTileBuilder: (index) =>
+          StaggeredTile.count(2, index.isEven ? 3 : 3),
+      mainAxisSpacing: 0.0,
+      crossAxisSpacing: 0.0,
+    );
+  }
+
+  Widget staggeredGridView() {
+    return Container(padding: EdgeInsets.all(20),
+      child: StaggeredGridView.countBuilder(
+          crossAxisCount: 2,
+          crossAxisSpacing: 2,
+          mainAxisSpacing: 2,
+          itemCount: imageList.length,
+          itemBuilder: (context, index) {
+            return Container(
+              decoration: BoxDecoration(
+                  color: Colors.transparent,
+                  borderRadius: BorderRadius.all(Radius.circular(15))),
+              child: ClipRRect(
+                borderRadius: BorderRadius.all(Radius.circular(0)),
+                child: FadeInImage.memoryNetwork(
+                  placeholder: kTransparentImage,
+                  image: imageList[index],
+                  fit: BoxFit.cover,
+                ),
+              ),
+            );
+          },
+          staggeredTileBuilder: (index) {
+            return StaggeredTile.count(1, index.isEven ? 1.2 : 1.8);
+          }),
+    );
+  }
+
+  Widget buildImageCard(int index) => Card(
+        color: Colors.white,
+        margin: EdgeInsets.all(1),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: Container(
+          margin: EdgeInsets.all(1),
+          child: ClipRRect(
+              // clip the image to a circle
+              borderRadius: BorderRadius.circular(8),
+              child: Image.network(
+                'https://source.unsplash.com/random?sig=$index',
+                fit: BoxFit.cover,
+              )),
+        ),
+      );
+}
+
+Widget myPhotoList(String MyImages) {
+  return Container(
+    decoration: BoxDecoration(
+      image: DecorationImage(
+        fit: BoxFit.fill,
+        image: NetworkImage(MyImages),
+      ),
+    ),
+  );
 }
