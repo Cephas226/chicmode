@@ -1,3 +1,7 @@
+
+cephaszoubga@gmail.com
+B$Gf$luJ5Z<3G1#ToiET%Hv@ToiS+$.
+
 ![](https://i.postimg.cc/d1bp9zpL/part-2.png)
 
 # Flutter Getx - Bottom Navigation Bar Example
