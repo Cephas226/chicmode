@@ -1,3 +1,25 @@
+MaterialApp(  
+      home: Scaffold(  
+        appBar: AppBar(  
+          title: Text("Flutter GridView Demo"),  
+          backgroundColor: Colors.red,  
+        ),  
+        body: Container(  
+            padding: EdgeInsets.all(12.0),  
+            child: GridView.builder(  
+              itemCount: images.length,  
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(  
+                  crossAxisCount: 2,  
+                  crossAxisSpacing: 4.0,  
+                  mainAxisSpacing: 4.0  
+              ),  
+              itemBuilder: (BuildContext context, int index){  
+                return Image.network(images[index]);  
+              },  
+            )),  
+      ),  
+    );  
+
 import 'dart:typed_data';
 
 import 'package:carousel_slider/carousel_slider.dart';
